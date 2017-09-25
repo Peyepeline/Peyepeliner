@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-->
+        toolbar for SecondActivity
+    </!-->
+    <!-- button 1 SHOW MENU-->
+    <!-->
+    <item
+        android:id="@+id/action_openDropdownMenu"
+        android:icon="@android:drawable/arrow_down_float"
+        android:title="@string/menuName"
+        app:showAsAction="always"/>
+    </!-->
+    <!-- button 1 NEXT ACTIVITY-->
+    <item
+        android:id="@+id/action_nextActivitySA"
+        android:icon="@android:drawable/btn_plus"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        android:onClick="nextActivitySA"/>
+
+    <item android:id="@+id/action_takePicSA"
+        android:title="@string/takePic"
+        android:icon="@android:drawable/ic_menu_camera"
+        app:showAsAction="always"/>
+
+    <item android:id="@+id/action_rotatePicSA"
+        android:title="@string/rotatePic"
+        android:icon="@android:drawable/ic_menu_rotate"
+        app:showAsAction="always"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_newPointSA"
+        android:title="@string/newPoint"
+        android:icon="@android:drawable/btn_plus"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_selectSA"
+        android:title="@string/select"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_delPointSA"
+        android:title="@string/delPoint"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_delEvSA"
+        android:title="@string/delEv"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+</menu>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-->
+        toolbar for ThirdActivity
+    </!-->
+
+    <item android:id="@+id/action_takePicTA"
+        android:title="@string/takePic"
+        android:icon="@android:drawable/ic_menu_camera"
+        app:showAsAction="always"/>
+
+
+</menu>

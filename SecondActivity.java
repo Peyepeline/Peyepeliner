@@ -116,6 +116,13 @@ public class SecondActivity extends AppCompatActivity {
                 Toast.makeText(SecondActivity.this, "Punkt auswaehlen", Toast.LENGTH_SHORT).show();
                 return true;
 
+            case R.id.action_nextActivitySA:
+                //startActivity(new Intent(this, SecondActivity.class));
+                Intent intent = new Intent(getApplicationContext(), ThirdActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+                return true;
+
             default:
 
                 return super.onOptionsItemSelected(item);
@@ -128,12 +135,14 @@ public class SecondActivity extends AppCompatActivity {
         moveTaskToBack(true);
     }
 
+    /*
     public void nextActivitySA(View v)
     {
         Intent intent = new Intent(getApplicationContext(), SecondActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
     }
+    */
 
     public void accessCamera() {
         //basically ensure correct picture (last one) is currently chosen one

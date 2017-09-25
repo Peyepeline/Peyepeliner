@@ -152,6 +152,12 @@ public class FirstActivity extends AppCompatActivity {
                 Toast.makeText(FirstActivity.this, "Ausgewähltes Dreieck löschen", Toast.LENGTH_SHORT).show();
                 return true;
 
+            case R.id.action_nextActivityFA:
+                //startActivity(new Intent(this, SecondActivity.class));
+                Intent intent = new Intent(getApplicationContext(), SecondActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+                return true;
             //next-activity-button is directly wired
             //case R.id.action_openDropdownMenu:  //TODO: simple show/hide menu button (actually does NOTHING!)
             //    return true;
@@ -164,12 +170,14 @@ public class FirstActivity extends AppCompatActivity {
         }
     }
 
+    /*
     public void nextActivityFA(View v)
     {
         Intent intent = new Intent(getApplicationContext(), SecondActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
     }
+    */
 
     public void accessCamera() {
         //basically ensure correct picture (last one) is currently chosen one

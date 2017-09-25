@@ -85,7 +85,7 @@ public class ThirdActivity extends AppCompatActivity {
         //TODO - encapsulate connectButton.setOnClickListener in Iterating-method ?
         //iterate over points in topView
         //begin iteration
-        topView.setSelectedPoint(topView.points.get(currIndex).getPointF());
+        topView.setSelectedPoint(topView.points.get(currIndex));
 
         //TODO - create list of points in topView - in TriangleCanvas - done.
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -106,7 +106,7 @@ public class ThirdActivity extends AppCompatActivity {
                 //next, increment currIndex
                 currIndex++;
                 if(currIndex<topView.points.size()){
-                    topView.setSelectedPoint(topView.points.get(currIndex).getPointF());
+                    topView.setSelectedPoint(topView.points.get(currIndex));
                 }else{
                     Toast.makeText(ThirdActivity.this, "Alle Punkte identifiziert.", Toast.LENGTH_SHORT).show();
                 }

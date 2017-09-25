@@ -55,7 +55,7 @@ public class TriangleCanvas extends ImageView {  //extends android.support.v7.wi
     private Tri3D firstTriangle;
     private Tri3D lastTriangle;
     private Tri3D selectedTriangle;
-    private PointF selectedPoint;
+    private P3D selectedPoint;
     private int anzahl = 0; //Anzahl der Dreiecke - ?deprecated
     private int newTriangleId = 0; //individuelle Id für neue dreiecke
 
@@ -95,17 +95,17 @@ public class TriangleCanvas extends ImageView {  //extends android.support.v7.wi
             //point0
             pointTBA = currentTri.getp0();
             if(!this.points.contains(pointTBA)){
-                this.points.add(new P3D(pointTBA));
+                this.points.add(pointTBA);
             }
             //point1
             pointTBA = currentTri.getp1();
             if(!this.points.contains(pointTBA)){
-                this.points.add(new P3D(pointTBA));
+                this.points.add(pointTBA);
             }
             //point2
             pointTBA = currentTri.getp2();
             if(!this.points.contains(pointTBA)){
-                this.points.add(new P3D(pointTBA));
+                this.points.add(pointTBA);
             }
             //continue...
             currentTri=currentTri.getNextTriangle();
@@ -241,14 +241,14 @@ public class TriangleCanvas extends ImageView {  //extends android.support.v7.wi
 
     public void setSelectedPoint(int x, int y){    //methode zum setten selectedPoint
         PointF checkPos = new PointF(x, y);
-        this.selectedPoint = getClosestPoint(checkPos).getPointF();
+        this.setSelectedPoint(getClosestPoint(checkPos));
     }
 
-    public void setSelectedPoint(PointF p){
+    public void setSelectedPoint(P3D p){
         this.selectedPoint = p;
     }
 
-    public PointF getSelectedPoint(){
+    public P3D getSelectedPoint(){
         return this.selectedPoint;
     }
 
@@ -288,7 +288,22 @@ public class TriangleCanvas extends ImageView {  //extends android.support.v7.wi
                 currAbstand = abstand(pos, currPt.getPointF());
             }
         }
-        return currPt;
+        //return currPt;
+        Tri3D currentTriangle = this.firstTriangle;
+        while(currentTriangle!=null) {
+            //check:does currentTriangle use currPoint?
+            if (currentTriangle.getp0().equals(currPt)) {
+                return currentTriangle.getp0();
+            }
+            if (currentTriangle.getp1().equals(currPt)) {
+                return currentTriangle.getp1();
+            }
+            if (currentTriangle.getp2().equals(currPt)) {
+                return currentTriangle.getp2();
+            }
+            currentTriangle = currentTriangle.getNextTriangle();
+        }
+        return new P3D(100, 100);   //IF NO POINT FOUND, FALLBACK TO THIS ONE
     }
 
     /*
@@ -319,9 +334,9 @@ public class TriangleCanvas extends ImageView {  //extends android.support.v7.wi
     */
 
     public void adjustSelectedPt(PointF fromWhere, PointF toWhere){    //move point of multiple triangles (w/o collision detect)
-        PointF pointToAdjust = this.getSelectedPoint();
+        //P3D pointToAdjust = this.getSelectedPoint();
         //has a Pt been selected?
-        if(pointToAdjust==null){
+        if(this.getSelectedPoint()==null){
             return;
         }
         //calc vector and reuse dX,dY for new coords
@@ -331,8 +346,9 @@ public class TriangleCanvas extends ImageView {  //extends android.support.v7.wi
         //dX+=pointToAdjust.x;
         //dY+=pointToAdjust.y;
         //calc adjustedPointPos
-        PointF adjustedPt = new PointF(dX, dY);
-        pointToAdjust.offset(dX, dY);
+        //PointF adjustedPt = new PointF(dX, dY);
+        this.selectedPoint.x += dX;
+        this.selectedPoint.y += dY;
 		//TODO - TEST THIS
 		//re-set calculation start point to avoid summation of vector during movement
 		moveFrom.set(toWhere);

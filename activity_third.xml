@@ -18,7 +18,7 @@
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat"/>
-    <com.example.core.peyepeliner.TriangleCanvas
+    <com.example.core.peyepeliner.ShapeCanvas
         android:id="@+id/pictureTop"
         android:layout_width="match_parent"
         android:layout_height="450px" />
@@ -36,7 +36,7 @@
             android:src="@android:drawable/ic_menu_add"/>
 
     </LinearLayout>
-    <com.example.core.peyepeliner.PointCanvas
+    <com.example.core.peyepeliner.ShapeCanvas
         android:id="@+id/pictureFront"
         android:layout_width="match_parent"
         android:layout_height="450px" />

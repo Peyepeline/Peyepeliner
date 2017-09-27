@@ -6,6 +6,7 @@ package com.example.core.peyepeliner;
 
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.shapes.Shape;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
@@ -26,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class SecondActivity extends AppCompatActivity {
-    public static PointCanvas importedPhoto;
+    public static ShapeCanvas importedPhoto;
 
     private final int CAMERA_REQUEST = 815;
     private boolean picTaken = false;
@@ -43,7 +44,7 @@ public class SecondActivity extends AppCompatActivity {
         setSupportActionBar(customToolbar);
 
         //TODO - test
-        importedPhoto = (PointCanvas) findViewById(R.id.poiCanvas);
+        importedPhoto = (ShapeCanvas) findViewById(R.id.poiCanvas);
 
         importedPhoto.initCPaint();
 
@@ -101,7 +102,7 @@ public class SecondActivity extends AppCompatActivity {
             case R.id.action_delPointSA:
                 importedPhoto.setOperationID(2);
                 Toast.makeText(SecondActivity.this, "Punkt loeschen", Toast.LENGTH_SHORT).show();
-                if(importedPhoto.getSelectedPoint()==-1){
+                if(importedPhoto.getSelectedPointIndex()==-1){
                     Toast.makeText(SecondActivity.this, "KEIN PUNKT AUSGEWÄHLT!", Toast.LENGTH_LONG).show();
                 }
                 return true;

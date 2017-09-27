@@ -28,8 +28,8 @@ public class FirstActivity extends AppCompatActivity {
     // private ImageButton importFromCamera;
     // private ImageButton rotateButton;
     // private ImageButton menuMenu;
-    public static TriangleCanvas importedPhoto;
-    //private ImageView importedPhoto;  //now in customized TriangleCanvas-class
+    public static ShapeCanvas importedPhoto;
+    //private ImageView importedPhoto;  //now in customized ShapeCanvas-class
     private final int CAMERA_REQUEST = 815;
     private boolean picTaken = false;
 
@@ -46,7 +46,7 @@ public class FirstActivity extends AppCompatActivity {
         setSupportActionBar(customToolbar);
 
         //TODO - test
-        importedPhoto = (TriangleCanvas) findViewById(R.id.triCanvas);
+        importedPhoto = (ShapeCanvas) findViewById(R.id.triCanvas);
         //importedPhoto.setImageBitmap(mutableBitmap);  //handled in accessCamera() - onActivityResult()
         //this.importedPhoto = (ImageView) findViewById(R.id.importedPhoto);
 
@@ -102,7 +102,7 @@ public class FirstActivity extends AppCompatActivity {
     }
 
     //TODO - strings done.
-    //TODO - rewrite TriangleOperations in TriangleCanvas to use PointF and operationBooleans
+    //TODO - rewrite TriangleOperations in ShapeCanvas to use PointF and operationBooleans
 
     @Override   //TODO - change string ref of action_openDropdownMenu to last used action
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -148,7 +148,7 @@ public class FirstActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_delTriFA:    //TODO: CCConnect - need Method to select Triangle! (in CANVAS?)
-                importedPhoto.delTri(importedPhoto.getSelectedTri()); // .delete(TriangleOperations.getSelectedTriangle());
+                importedPhoto.deleteTri(importedPhoto.getSelectedTri()); // .delete(TriangleOperations.getSelectedTriangle());
                 Toast.makeText(FirstActivity.this, "Ausgewähltes Dreieck löschen", Toast.LENGTH_SHORT).show();
                 return true;
 

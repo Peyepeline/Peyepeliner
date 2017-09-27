@@ -48,8 +48,8 @@ public class ThirdActivity extends AppCompatActivity {
         setContentView(R.layout.activity_third);
 
         //TODO - create correct toolbar
-        customToolbar = (Toolbar) findViewById(R.id.menu_ToolbarTA);
-        setSupportActionBar(customToolbar);
+        //customToolbar = (Toolbar) findViewById(R.id.menu_ToolbarTA);
+        //setSupportActionBar(customToolbar);
 
         //P1 - topView
         //TODO - import topView and point/triangle-data - done.
@@ -85,7 +85,7 @@ public class ThirdActivity extends AppCompatActivity {
         //TODO - encapsulate connectButton.setOnClickListener in Iterating-method ?
         //iterate over points in topView
         //begin iteration
-        topView.setSelectedPoint(topView.points.get(currIndex));
+        /*topView.setSelectedPoint(topView.points.get(currIndex));
 
         //TODO - create list of points in topView - in TriangleCanvas - done.
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -112,15 +112,17 @@ public class ThirdActivity extends AppCompatActivity {
                     Toast.makeText(ThirdActivity.this, "Alle Punkte identifiziert.", Toast.LENGTH_SHORT).show();
                 }
             }
-        });
+        });*/
 
     }
 
+    /*
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_toolbar3, menu);
+    public boolean onCreateOptionsMenu(Menu menu3) {
+        getMenuInflater().inflate(R.menu.menu_toolbar3, menu3);
         return true;
     }
+    */
 
     @Override
     public void onBackPressed() {

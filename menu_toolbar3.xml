@@ -10,5 +10,4 @@
         android:icon="@android:drawable/ic_menu_camera"
         app:showAsAction="always"/>
 
-
 </menu>

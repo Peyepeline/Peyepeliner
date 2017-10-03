@@ -73,7 +73,7 @@
             android:scaleType="fitCenter" />
     </FrameLayout>
     </!-->
-    <com.example.core.peyepeliner.TriangleCanvas
+    <com.example.core.peyepeliner.ShapeCanvas
         android:id="@+id/triCanvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

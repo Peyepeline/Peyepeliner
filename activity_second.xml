@@ -19,7 +19,7 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat"/>
 
-    <com.example.core.peyepeliner.PointCanvas
+    <com.example.core.peyepeliner.ShapeCanvas
         android:id="@+id/poiCanvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

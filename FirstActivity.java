@@ -1,7 +1,15 @@
 package com.example.core.peyepeliner;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.FragmentManager;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import com.example.core.peyepeliner.AlertDialogRadio.AlertPositiveListener;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
@@ -23,17 +31,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class FirstActivity extends AppCompatActivity {
+public class FirstActivity extends AppCompatActivity implements AlertPositiveListener {
 
     // private ImageButton importFromCamera;
     // private ImageButton rotateButton;
     // private ImageButton menuMenu;
-    public static TriangleCanvas importedPhoto;
-    //private ImageView importedPhoto;  //now in customized TriangleCanvas-class
+    public static ShapeCanvas importedPhoto;
+    //private ImageView importedPhoto;  //now in customized ShapeCanvas-class
     private final int CAMERA_REQUEST = 815;
     private boolean picTaken = false;
+    private int item = -1;
 
     private String pictureImagePath = "";
+
+    //Neu:
+    //Intent intent;
 
     //private Menu dropDownMenu;
 
@@ -46,7 +58,7 @@ public class FirstActivity extends AppCompatActivity {
         setSupportActionBar(customToolbar);
 
         //TODO - test
-        importedPhoto = (TriangleCanvas) findViewById(R.id.triCanvas);
+        importedPhoto = (ShapeCanvas) findViewById(R.id.triCanvas);
         //importedPhoto.setImageBitmap(mutableBitmap);  //handled in accessCamera() - onActivityResult()
         //this.importedPhoto = (ImageView) findViewById(R.id.importedPhoto);
 
@@ -61,6 +73,7 @@ public class FirstActivity extends AppCompatActivity {
                 return true;
             }
         });
+
 
     /*    importFromCamera = (ImageButton) findViewById(R.id.importFromCamera);
         importFromCamera.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +115,7 @@ public class FirstActivity extends AppCompatActivity {
     }
 
     //TODO - strings done.
-    //TODO - rewrite TriangleOperations in TriangleCanvas to use PointF and operationBooleans
+    //TODO - rewrite TriangleOperations in ShapeCanvas to use PointF and operationBooleans
 
     @Override   //TODO - change string ref of action_openDropdownMenu to last used action
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -148,7 +161,7 @@ public class FirstActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_delTriFA:    //TODO: CCConnect - need Method to select Triangle! (in CANVAS?)
-                importedPhoto.delTri(importedPhoto.getSelectedTri()); // .delete(TriangleOperations.getSelectedTriangle());
+                importedPhoto.deleteTri(importedPhoto.getSelectedTri()); // .delete(TriangleOperations.getSelectedTriangle());
                 Toast.makeText(FirstActivity.this, "Ausgewähltes Dreieck löschen", Toast.LENGTH_SHORT).show();
                 return true;
 
@@ -156,7 +169,22 @@ public class FirstActivity extends AppCompatActivity {
                 //startActivity(new Intent(this, SecondActivity.class));
                 Intent intent = new Intent(getApplicationContext(), SecondActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                if(importedPhoto.points!=null) {
+                    intent.putExtra("XPunkte", importedPhoto.getPointArray('x'));
+                    intent.putExtra("YPunkte", importedPhoto.getPointArray('y'));
+                    intent.putExtra("ZPunkte", importedPhoto.getPointArray('z'));
+                }
+                if(importedPhoto.getFirstTriangle()!=null) {
+                    intent.putExtra("Dreiecke", importedPhoto.getTriangleArray());
+                }
+                if(pictureImagePath!=null){
+                    intent.putExtra("Pfad",pictureImagePath);
+                }
+                //importedPhoto.buildDrawingCache();
+                //Bitmap bitmap = importedPhoto.getDrawingCache();
+                //intent.putExtra("Bitmap", bitmap);
                 startActivity(intent);
+
                 return true;
             //next-activity-button is directly wired
             //case R.id.action_openDropdownMenu:  //TODO: simple show/hide menu button (actually does NOTHING!)
@@ -169,6 +197,89 @@ public class FirstActivity extends AppCompatActivity {
 
         }
     }
+
+    /** Defining button click listener for the OK button of the alert dialog window */
+    @Override
+    public void onPositiveClick(int item) {
+        switch (item) {
+            case 0:
+                //TopView
+                importedPhoto.canvasTypeTri = true;
+                break;
+            case 1:
+                //Side-|FrontView
+                importedPhoto.canvasTypeTri = false;
+                break;
+        }
+        Toast.makeText(FirstActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();
+        /*this.position = position;
+        /** Getting the reference of the textview from the main layout
+        TextView tv = (TextView) findViewById(R.id.tv_android);
+        /** Setting the selected android version in the textview
+        tv.setText("Your Choice : " + Android.code[this.position]);
+        */
+    }
+
+    public void choseCanvasType() {
+    /*
+        CharSequence canvases[] = new CharSequence[] {"Top View", "Side View"};
+
+        AlertDialog.Builder dBuilder = new AlertDialog.Builder(this);
+        dBuilder.setTitle("Pick a perspective:");
+        dBuilder.setItems(canvases, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int index) {
+                // the user clicked on canvases[which]
+                if(index==0){
+                    importedPhoto.canvasTypeTri=true;
+                }else{
+                    importedPhoto.canvasTypeTri=false;
+                }
+            }
+        });
+        dBuilder.show();
+
+
+        // Strings to Show In Dialog with Radio Buttons
+        final CharSequence[] canvasTypes = {" Top View ", " Side View "};
+        // Creating and Building the Dialog
+        AlertDialog.Builder dBuilder = new AlertDialog.Builder(this);
+        final AlertDialog canvasTypeDialog = dBuilder.create();
+        dBuilder.setTitle("Pick the Perspective:");
+        dBuilder.setSingleChoiceItems(canvasTypes, -1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                switch (item) {
+                    case 0:
+                        //TopView
+                        importedPhoto.canvasTypeTri = true;
+                        canvasTypeDialog.dismiss(); //kann sein, dass hier ein "might not have been initialized" angezeigt wird.
+                        break;
+                    case 1:
+                        //Side-|FrontView
+                        importedPhoto.canvasTypeTri = false;
+                        canvasTypeDialog.dismiss();
+                        break;
+                }
+                //canvasTypeDialog.dismiss();
+            }
+        });
+        //canvasTypeDialog = dBuilder.create();
+        canvasTypeDialog.show();
+        */
+        /** Getting the fragment manager */
+        FragmentManager fManager = getFragmentManager();
+        /** Instantiating the DialogFragment class */
+        AlertDialogRadio alert = new AlertDialogRadio();
+        /** Creating a bundle object to store the selected item's index */
+        Bundle b  = new Bundle();
+        /** Storing the selected item's index in the bundle object */
+        b.putInt("position", item);
+        /** Setting the bundle object to the dialog fragment object */
+        alert.setArguments(b);
+        /** Creating the dialog fragment object, which will in turn open the alert dialog window */
+        alert.show(fManager, "alert_dialog_radio");
+    }
+
 
     /*
     public void nextActivityFA(View v)
@@ -196,8 +307,9 @@ public class FirstActivity extends AppCompatActivity {
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, TakenPhotoUri);
         startActivityForResult(cameraIntent, CAMERA_REQUEST);
-
+        //choseCanvasType();
     }
+
     //TODO: scale+orient photo? -   DONE, see onCreate.rotateButton
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         //Toast.makeText(ImportAndEnterActivity.this, "foto lädt", Toast.LENGTH_SHORT).show();
@@ -207,7 +319,7 @@ public class FirstActivity extends AppCompatActivity {
                 Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                 importedPhoto.setImageBitmap(photo);
             }
+            choseCanvasType();
         }
     }
 }
-

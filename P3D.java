@@ -2,11 +2,13 @@ package com.example.core.peyepeliner;
 
 import android.graphics.PointF;
 
+import java.io.Serializable;
+
 /**
  * Created by Core on 17.09.2017.
  */
 
-class P3D {
+class P3D{
     //private PointF pointF;
 	public float x;
 	public float y;

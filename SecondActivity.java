@@ -4,8 +4,11 @@ package com.example.core.peyepeliner;
  * Created by Isabell on 12.09.2017.
  **/
 
+import com.example.core.peyepeliner.AlertDialogRadio.AlertPositiveListener;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.shapes.Shape;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
@@ -20,30 +23,38 @@ import android.view.View;
 //import android.widget.ImageView;
 //import android.graphics.Bitmap;
 import android.graphics.*;
+import android.support.*;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class SecondActivity extends AppCompatActivity {
-    public static PointCanvas importedPhoto;
+public class SecondActivity extends AppCompatActivity implements AlertPositiveListener {
+    public static ShapeCanvas importedPhoto;
+    //public Bitmap bitmap;
 
-    private final int CAMERA_REQUEST = 815;
-    private boolean picTaken = false;
+    private final int CAMERA_REQUEST = 816;
+    private boolean pic2Taken = false;
+    private int item = -1;
 
     private String pictureImagePath = "";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //bitmap = (Bitmap) getIntent().getParcelableExtra("Bitmap");
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_second);
 
         Toolbar customToolbar = (Toolbar) findViewById(R.id.menuToolbarSA);
         setSupportActionBar(customToolbar);
 
+        //importedPhoto = (ShapeCanvas) getIntent().getSerializableExtra("Canvas");
+
         //TODO - test
-        importedPhoto = (PointCanvas) findViewById(R.id.poiCanvas);
+        importedPhoto = (ShapeCanvas) findViewById(R.id.poiCanvas);
 
         importedPhoto.initCPaint();
 
@@ -56,23 +67,38 @@ public class SecondActivity extends AppCompatActivity {
             }
         });
 
+        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+            importedPhoto.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
+                    getIntent().getFloatArrayExtra("ZPunkte"));
+        }
+        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+            importedPhoto.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
+        }
+        /*if(getIntent().getStringExtra("Pfad")!=null){ //Test
+            File imgFile = new  File(getIntent().getStringExtra("Pfad"));
+            if(imgFile.exists()){
+                Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                importedPhoto.setImageBitmap(photo);
+            }
+        }*/
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu2) {
         getMenuInflater().inflate(R.menu.menu_toolbar2, menu2);
-        MenuItem item = menu2.findItem(R.id.action_rotatePicSA);
-        item.setVisible(picTaken);
-        item = menu2.findItem(R.id.action_newPointSA);
-        item.setVisible(picTaken);
-        item = menu2.findItem(R.id.action_selectSA);
-        item.setVisible(picTaken);
-        item = menu2.findItem(R.id.action_delPointSA);
-        item.setVisible(picTaken);
-        item = menu2.findItem(R.id.action_delEvSA);
-        item.setVisible(picTaken);
-        item = menu2.findItem(R.id.action_nextActivitySA);
-        item.setVisible(picTaken);
+        MenuItem item2 = menu2.findItem(R.id.action_rotatePicSA);
+        item2.setVisible(pic2Taken);
+        item2 = menu2.findItem(R.id.action_newPointSA);
+        item2.setVisible(pic2Taken);
+        item2 = menu2.findItem(R.id.action_selectSA);
+        item2.setVisible(pic2Taken);
+        item2 = menu2.findItem(R.id.action_delPointSA);
+        item2.setVisible(pic2Taken);
+        item2 = menu2.findItem(R.id.action_delEvSA);
+        item2.setVisible(pic2Taken);
+        item2 = menu2.findItem(R.id.action_nextActivitySA);
+        item2.setVisible(pic2Taken);
         return true;
     }
 
@@ -84,7 +110,7 @@ public class SecondActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_takePicSA:
                 accessCamera();
-                picTaken = true;
+                pic2Taken = true;
                 invalidateOptionsMenu();
                 return true;
 
@@ -101,7 +127,7 @@ public class SecondActivity extends AppCompatActivity {
             case R.id.action_delPointSA:
                 importedPhoto.setOperationID(2);
                 Toast.makeText(SecondActivity.this, "Punkt loeschen", Toast.LENGTH_SHORT).show();
-                if(importedPhoto.getSelectedPoint()==-1){
+                if(importedPhoto.getSelectedPointIndex()==-1){
                     Toast.makeText(SecondActivity.this, "KEIN PUNKT AUSGEWÄHLT!", Toast.LENGTH_LONG).show();
                 }
                 return true;
@@ -128,6 +154,37 @@ public class SecondActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
 
         }
+    }
+
+    /** Defining button click listener for the OK button of the alert dialog window */
+    @Override
+    public void onPositiveClick(int item) {
+        switch (item) {
+            case 0:
+                //TopView
+                importedPhoto.canvasTypeTri = true;
+                break;
+            case 1:
+                //Side-|FrontView
+                importedPhoto.canvasTypeTri = false;
+                break;
+        }
+        Toast.makeText(SecondActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();
+    }
+
+    public void choseCanvasType() {
+        /** Getting the fragment manager */
+        FragmentManager fManager = getFragmentManager();
+        /** Instantiating the DialogFragment class */
+        AlertDialogRadio alert = new AlertDialogRadio();
+        /** Creating a bundle object to store the selected item's index */
+        Bundle b  = new Bundle();
+        /** Storing the selected item's index in the bundle object */
+        b.putInt("position", item);
+        /** Setting the bundle object to the dialog fragment object */
+        alert.setArguments(b);
+        /** Creating the dialog fragment object, which will in turn open the alert dialog window */
+        alert.show(fManager, "alert_dialog_radio");
     }
 
     @Override
@@ -172,7 +229,7 @@ public class SecondActivity extends AppCompatActivity {
                 Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                 importedPhoto.setImageBitmap(photo);
             }
+            choseCanvasType();
         }
     }
 }
-

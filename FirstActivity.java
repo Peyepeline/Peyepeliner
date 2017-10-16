@@ -9,6 +9,7 @@ import android.content.DialogInterface.OnClickListener;
 import com.example.core.peyepeliner.AlertDialogRadio.AlertPositiveListener;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
@@ -38,12 +39,18 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
     public static ShapeCanvas importedPhoto;
     //private ImageView importedPhoto;  //now in customized ShapeCanvas-class
     private final int CAMERA_REQUEST = 815;
-    private boolean picTaken = false;
+    private static boolean picTaken = false;
     private int item = -1;
 
     private String pictureImagePath = "";
 
+    //Neu:
+    //Intent intent;
+
     //private Menu dropDownMenu;
+    public static boolean isPicTaken(){
+        return picTaken;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +77,7 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
             }
         });
 
+
     /*    importFromCamera = (ImageButton) findViewById(R.id.importFromCamera);
         importFromCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,22 +98,52 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu1) {
-        getMenuInflater().inflate(R.menu.menu_toolbar, menu1);
+        getMenuInflater().inflate(R.menu.menu_toolbarcombined, menu1);
         //MenuItem item = menu.findItem(R.id.action_rotatePic);//which menuItem?
-        MenuItem item = menu1.findItem(R.id.action_rotatePicFA);
-        item.setVisible(picTaken);
+        MenuItem item = menu1.findItem(R.id.action_takePicFA);
+        item.setVisible(true);
+        item = menu1.findItem(R.id.action_takePicSA);
+        item.setVisible(false);
+        item = menu1.findItem(R.id.action_rotatePicFA);
+		//TopView
+        //importedPhoto.canvasTypeTri = true;
+		//eq.	(0,0) = 0	f&&f	f
+		//		(0,1) = 0	f&&t	f
+		//		(1,0) = 0	t&&f	f
+		//		(1,1) = 1	t&&t	t
+		//&& ignores second argument if first is false
+        item.setVisible(picTaken && importedPhoto.canvasTypeTri);
         item = menu1.findItem(R.id.action_newTriFA);
-        item.setVisible(picTaken);
+        item.setVisible(picTaken && importedPhoto.canvasTypeTri);
         item = menu1.findItem(R.id.action_movePtFA);
-        item.setVisible(picTaken);
+        item.setVisible(picTaken && importedPhoto.canvasTypeTri);
         item = menu1.findItem(R.id.action_selectPtFA);
-        item.setVisible(picTaken);
+        item.setVisible(picTaken && importedPhoto.canvasTypeTri);
         item = menu1.findItem(R.id.action_selectTriFA);
-        item.setVisible(picTaken);
+        item.setVisible(picTaken && importedPhoto.canvasTypeTri);
         item = menu1.findItem(R.id.action_delTriFA);
-        item.setVisible(picTaken);
+        item.setVisible(picTaken && importedPhoto.canvasTypeTri);
         item = menu1.findItem(R.id.action_nextActivityFA);
-        item.setVisible(picTaken);
+        item.setVisible(picTaken && importedPhoto.canvasTypeTri);
+		//SideView
+		//importedPhoto.canvasTypeTri = false;
+		//via additional XOR
+		//eq.	(0,0) = 0 ^ 0 = 0
+		//		(0,1) = 0 ^ 0 = 0
+		//		(1,0) = 0 ^ 1 = 1
+		//		(1,1) = 1 ^ 1 = 0
+		item = menu1.findItem(R.id.action_rotatePicSA);
+        item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
+        item = menu1.findItem(R.id.action_newPointSA);
+        item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
+        item = menu1.findItem(R.id.action_selectSA);
+        item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
+        item = menu1.findItem(R.id.action_delPointSA);
+        item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
+        item = menu1.findItem(R.id.action_delEvSA);
+        item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
+        item = menu1.findItem(R.id.action_nextActivitySA);
+        item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
         return true;
     }
 
@@ -117,7 +155,7 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
         switch (item.getItemId()) {
             case R.id.action_takePicFA:
                 accessCamera();
-                picTaken = true;
+                //picTaken = true;
                 invalidateOptionsMenu();
                 return true;
 
@@ -164,11 +202,48 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
                 //startActivity(new Intent(this, SecondActivity.class));
                 Intent intent = new Intent(getApplicationContext(), SecondActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                if(importedPhoto.points!=null) {
+                    intent.putExtra("XPunkte", importedPhoto.getPointArray('x'));
+                    intent.putExtra("YPunkte", importedPhoto.getPointArray('y'));
+                    intent.putExtra("ZPunkte", importedPhoto.getPointArray('z'));
+                }
+                if(importedPhoto.getFirstTriangle()!=null) {
+                    intent.putExtra("Dreiecke", importedPhoto.getTriangleArray());
+                }
+                if(pictureImagePath!=null){
+                    intent.putExtra("Pfad",pictureImagePath);
+                }
+                //importedPhoto.buildDrawingCache();
+                //Bitmap bitmap = importedPhoto.getDrawingCache();
+                //intent.putExtra("Bitmap", bitmap);
                 startActivity(intent);
+
                 return true;
-            //next-activity-button is directly wired
-            //case R.id.action_openDropdownMenu:  //TODO: simple show/hide menu button (actually does NOTHING!)
-            //    return true;
+				
+            //former 2ndAct-Actions
+			case R.id.action_newPointSA:
+                importedPhoto.setOperationID(1);
+                Toast.makeText(FirstActivity.this, "Neuer Punkt", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FirstActivity.this, "OperationID "+importedPhoto.getOperationID() , Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.action_delPointSA:
+                importedPhoto.setOperationID(2);
+                Toast.makeText(FirstActivity.this, "Punkt loeschen", Toast.LENGTH_SHORT).show();
+                if(importedPhoto.getSelectedPointIndex()==-1){
+                    Toast.makeText(FirstActivity.this, "KEIN PUNKT AUSGEWÄHLT!", Toast.LENGTH_LONG).show();
+                }
+                return true;
+
+            case R.id.action_delEvSA:
+                importedPhoto.setOperationID(3);
+                Toast.makeText(FirstActivity.this, "Alles loeschen", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.action_selectSA:
+                importedPhoto.setOperationID(0);
+                Toast.makeText(FirstActivity.this, "Punkt auswaehlen", Toast.LENGTH_SHORT).show();
+                return true;
 
             default:
                 // n.def.action
@@ -185,13 +260,22 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
             case 0:
                 //TopView
                 importedPhoto.canvasTypeTri = true;
+				//chose correct buttons to show
+				picTaken = true;
+				//via boolean comparative
+				//TODO - give reaction to choice - only in 2ndAct.
                 break;
             case 1:
                 //Side-|FrontView
                 importedPhoto.canvasTypeTri = false;
+				//chose correct buttons to show
+				picTaken = true;
+				//via boolean comparative
+				//TODO - give reaction to choice - only in 2ndAct.
                 break;
         }
         Toast.makeText(FirstActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();
+        invalidateOptionsMenu();
         /*this.position = position;
         /** Getting the reference of the textview from the main layout
         TextView tv = (TextView) findViewById(R.id.tv_android);

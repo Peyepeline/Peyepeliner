@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.Toast;
 
 
 /**
@@ -13,6 +15,7 @@ import android.os.Bundle;
 
 public class AlertDialogRadio  extends DialogFragment {
 
+    boolean testB = true;
     final CharSequence[] canvasTypes = {" Top View ", " Side View "};
     /** Declaring the interface, to invoke a callback function in the implementing activity class */
     AlertPositiveListener alertPositiveListener;
@@ -44,6 +47,36 @@ public class AlertDialogRadio  extends DialogFragment {
             alertPositiveListener.onPositiveClick(position);
         }
     };
+    /** Listener for choice feedback */
+    DialogInterface.OnClickListener itemSelectListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            AlertDialog alert = (AlertDialog)dialog;
+            int position = alert.getListView().getCheckedItemPosition();
+            if((position == 0) && FirstActivity.importedPhoto.canvasTypeTri){
+                //what to do if choice not possible?
+                Toast.makeText(getActivity(), " DO NOT CHANGE THE CHOICE GOD MADE FOR YOU! ", Toast.LENGTH_LONG).show();
+                testB = false;
+                alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
+            }
+            if((position == 1) && !FirstActivity.importedPhoto.canvasTypeTri){
+                //what to do if choice not possible?
+                Toast.makeText(getActivity(), " DO NOT CHANGE THE CHOICE GOD MADE FOR YOU! ", Toast.LENGTH_LONG).show();
+                testB = false;
+                alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
+            }
+            if((position == 0) && !FirstActivity.importedPhoto.canvasTypeTri){
+                //what to do if choice possible?
+                testB = true;
+                alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
+            }
+            if((position == 1) && FirstActivity.importedPhoto.canvasTypeTri){
+                //what to do if choice possible?
+                testB = true;
+                alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
+            }
+        }
+    };
     /** This is a callback method which will be executed
      *  on creating this fragment
      */
@@ -55,16 +88,34 @@ public class AlertDialogRadio  extends DialogFragment {
         /** Creating a builder for the alert dialog window */
         AlertDialog.Builder dBuilder = new AlertDialog.Builder(getActivity());
         /** Setting a title for the window */
-        dBuilder.setTitle("Pick the Perspective:");
+        //dBuilder.setTitle("Pick the Perspective:");
         /** Setting items to the alert dialog */
-        dBuilder.setSingleChoiceItems(canvasTypes, position, null);
+        /** Second argument states default selection */
+        //dBuilder.setSingleChoiceItems(canvasTypes, position, null);
+        if(FirstActivity.isPicTaken()){
+            if(FirstActivity.importedPhoto.canvasTypeTri){
+                dBuilder.setTitle("Pick the Perspective (Top View already taken!):");
+                dBuilder.setSingleChoiceItems(canvasTypes, 1, itemSelectListener);
+            }else{
+                dBuilder.setTitle("Pick the Perspective (Side View already taken!):");
+                dBuilder.setSingleChoiceItems(canvasTypes, 0, itemSelectListener);
+            }
+        }else{
+            testB = true;
+            dBuilder.setTitle("Pick the Perspective:");
+            dBuilder.setSingleChoiceItems(canvasTypes, 0, null);
+        }
         /** Setting a positive button and its listener */
         dBuilder.setNeutralButton("OK",positiveListener);
         /** Setting a negative button and its listener */
         //dBuilder.setNegativeButton("Cancel", null);
         /** Creating the alert dialog window using the builder class */
         AlertDialog dialog = dBuilder.create();
+        //Button buttonOk = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+        //buttonOk.setEnabled(testB);
         /** Return the alert dialog window */
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
         return dialog;
     }
 }

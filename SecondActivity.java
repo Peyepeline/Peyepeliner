@@ -8,6 +8,7 @@ import com.example.core.peyepeliner.AlertDialogRadio.AlertPositiveListener;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.shapes.Shape;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
@@ -30,6 +31,7 @@ import java.util.Date;
 
 public class SecondActivity extends AppCompatActivity implements AlertPositiveListener {
     public static ShapeCanvas importedPhoto;
+    //public Bitmap bitmap;
 
     private final int CAMERA_REQUEST = 816;
     private boolean pic2Taken = false;
@@ -40,11 +42,16 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //bitmap = (Bitmap) getIntent().getParcelableExtra("Bitmap");
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_second);
 
         Toolbar customToolbar = (Toolbar) findViewById(R.id.menuToolbarSA);
         setSupportActionBar(customToolbar);
+
+        //importedPhoto = (ShapeCanvas) getIntent().getSerializableExtra("Canvas");
 
         //TODO - test
         importedPhoto = (ShapeCanvas) findViewById(R.id.poiCanvas);
@@ -60,23 +67,71 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
             }
         });
 
+        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+            importedPhoto.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
+                    getIntent().getFloatArrayExtra("ZPunkte"));
+        }
+        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+            importedPhoto.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
+        }
+        /*if(getIntent().getStringExtra("Pfad")!=null){ //Test
+            File imgFile = new  File(getIntent().getStringExtra("Pfad"));
+            if(imgFile.exists()){
+                Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                importedPhoto.setImageBitmap(photo);
+            }
+        }*/
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu2) {
-        getMenuInflater().inflate(R.menu.menu_toolbar2, menu2);
-        MenuItem item2 = menu2.findItem(R.id.action_rotatePicSA);
-        item2.setVisible(pic2Taken);
-        item2 = menu2.findItem(R.id.action_newPointSA);
-        item2.setVisible(pic2Taken);
-        item2 = menu2.findItem(R.id.action_selectSA);
-        item2.setVisible(pic2Taken);
-        item2 = menu2.findItem(R.id.action_delPointSA);
-        item2.setVisible(pic2Taken);
-        item2 = menu2.findItem(R.id.action_delEvSA);
-        item2.setVisible(pic2Taken);
-        item2 = menu2.findItem(R.id.action_nextActivitySA);
-        item2.setVisible(pic2Taken);
+        getMenuInflater().inflate(R.menu.menu_toolbarcombined, menu2);
+        //MenuItem item = menu.findItem(R.id.action_rotatePic);//which menuItem?
+        MenuItem item = menu2.findItem(R.id.action_takePicFA);
+        item.setVisible(false);
+        item = menu2.findItem(R.id.action_takePicSA);
+        item.setVisible(true);
+        item = menu2.findItem(R.id.action_rotatePicFA);
+		//TopView
+        //importedPhoto.canvasTypeTri = true;
+		//eq.	(0,0) = 0	f&&f	f
+		//		(0,1) = 0	f&&t	f
+		//		(1,0) = 0	t&&f	f
+		//		(1,1) = 1	t&&t	t
+		//&& ignores second argument if first is false
+        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+        item = menu2.findItem(R.id.action_newTriFA);
+        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+        item = menu2.findItem(R.id.action_movePtFA);
+        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+        item = menu2.findItem(R.id.action_selectPtFA);
+        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+        item = menu2.findItem(R.id.action_selectTriFA);
+        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+        item = menu2.findItem(R.id.action_delTriFA);
+        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+        item = menu2.findItem(R.id.action_nextActivityFA);
+        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+		//SideView
+		//importedPhoto.canvasTypeTri = false;
+		//via additional XOR
+		//eq.	(0,0) = 0 ^ 0 = 0
+		//		(0,1) = 0 ^ 0 = 0
+		//		(1,0) = 0 ^ 1 = 1
+		//		(1,1) = 1 ^ 1 = 0
+		item = menu2.findItem(R.id.action_rotatePicSA);
+        item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
+        item = menu2.findItem(R.id.action_newPointSA);
+        item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
+        item = menu2.findItem(R.id.action_selectSA);
+        item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
+        item = menu2.findItem(R.id.action_delPointSA);
+        item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
+        item = menu2.findItem(R.id.action_delEvSA);
+        item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
+        item = menu2.findItem(R.id.action_nextActivitySA);
+        item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
         return true;
     }
 
@@ -88,7 +143,7 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
         switch (item.getItemId()) {
             case R.id.action_takePicSA:
                 accessCamera();
-                pic2Taken = true;
+                //pic2Taken = true;
                 invalidateOptionsMenu();
                 return true;
 
@@ -126,6 +181,36 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
                 return true;
+				
+			//former 1stAct-Actions
+			case R.id.action_newTriFA:
+                importedPhoto.setOperationID(1);
+                Toast.makeText(SecondActivity.this, "Neues Dreieck", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SecondActivity.this, "OperationID "+importedPhoto.getOperationID() , Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.action_movePtFA:
+                importedPhoto.setOperationID(2);
+                Toast.makeText(SecondActivity.this, "Punkt bewegen", Toast.LENGTH_SHORT).show();
+                if(importedPhoto.getSelectedPoint()==null){
+                    Toast.makeText(SecondActivity.this, "KEIN PUNKT AUSGEWÄHLT!", Toast.LENGTH_LONG).show();
+                }
+                return true;
+
+            case R.id.action_selectPtFA:
+                importedPhoto.setOperationID(3);
+                Toast.makeText(SecondActivity.this, "Punkt auswählen", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.action_selectTriFA:
+                importedPhoto.setOperationID(0);
+                Toast.makeText(SecondActivity.this, "Dreieck auswählen", Toast.LENGTH_SHORT).show();
+                return true;
+
+            case R.id.action_delTriFA:
+                importedPhoto.deleteTri(importedPhoto.getSelectedTri()); // .delete(TriangleOperations.getSelectedTriangle());
+                Toast.makeText(SecondActivity.this, "Ausgewähltes Dreieck löschen", Toast.LENGTH_SHORT).show();
+                return true;
 
             default:
 
@@ -133,7 +218,6 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
 
         }
     }
-
     /** Defining button click listener for the OK button of the alert dialog window */
     @Override
     public void onPositiveClick(int item) {
@@ -141,13 +225,20 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
             case 0:
                 //TopView
                 importedPhoto.canvasTypeTri = true;
+				pic2Taken = true;
+				//via boolean comparative
+				//TODO - give reaction to choice - only in 2ndAct.
                 break;
             case 1:
                 //Side-|FrontView
                 importedPhoto.canvasTypeTri = false;
+				pic2Taken = true;
+				//via boolean comparative
+				//TODO - give reaction to choice - only in 2ndAct.
                 break;
         }
         Toast.makeText(SecondActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();
+        invalidateOptionsMenu();
     }
 
     public void choseCanvasType() {
@@ -163,6 +254,21 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
         alert.setArguments(b);
         /** Creating the dialog fragment object, which will in turn open the alert dialog window */
         alert.show(fManager, "alert_dialog_radio");
+
+		//test
+        /*
+		list = alert.getArguments();
+		final ListAdapter adaptor = alert.getListView().getAdapter();
+		//final CharSequence[] canvasTypes = {" Top View ", " Side View "};
+		if (FirstActivity.importedPhoto.canvasTypeTri) {
+			// Disable TopView (choice 0), enable other choice
+			adaptor.getView(0, null, list).setEnabled(false);
+			adaptor.getView(1, null, list).setEnabled(true);
+		} else {
+			// Disable SideView (choice 1), enable other choice
+			adaptor.getView(1, null, list).setEnabled(false);
+			adaptor.getView(0, null, list).setEnabled(true);
+		}*/
     }
 
     @Override

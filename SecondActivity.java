@@ -74,6 +74,8 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
         if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
             importedPhoto.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
         }
+
+        importedPhoto.canvasTypeTri = !getIntent().getBooleanExtra("Typ",true);
         /*if(getIntent().getStringExtra("Pfad")!=null){ //Test
             File imgFile = new  File(getIntent().getStringExtra("Pfad"));
             if(imgFile.exists()){
@@ -81,7 +83,6 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 importedPhoto.setImageBitmap(photo);
             }
         }*/
-
     }
 
     @Override
@@ -146,6 +147,23 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 //startActivity(new Intent(this, SecondActivity.class));
                 Intent intent = new Intent(getApplicationContext(), ThirdActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+                if(importedPhoto.points!=null) {
+                    intent.putExtra("XPunkte", importedPhoto.getPointArray('x'));
+                    intent.putExtra("YPunkte", importedPhoto.getPointArray('y'));
+                    intent.putExtra("ZPunkte", importedPhoto.getPointArray('z'));
+                }
+                if(importedPhoto.getFirstTriangle()!=null) {
+                    intent.putExtra("Dreiecke", importedPhoto.getTriangleArray());
+                }
+                if(getIntent().getStringExtra("Pfad")!=null){
+                    intent.putExtra("PfadBild1", getIntent().getStringExtra("Pfad"));
+                }
+                if(pictureImagePath!=null){
+                    intent.putExtra("PfadBild2",pictureImagePath);
+                }
+                intent.putExtra("TypBild2",importedPhoto.canvasTypeTri);
+
                 startActivity(intent);
                 return true;
 
@@ -229,7 +247,7 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                 importedPhoto.setImageBitmap(photo);
             }
-            choseCanvasType();
+            choseCanvasType(); //nicht waehlen lassen, sondern abhaengig von getIntent machen?
         }
     }
 }

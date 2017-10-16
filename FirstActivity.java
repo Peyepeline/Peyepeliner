@@ -180,9 +180,8 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
                 if(pictureImagePath!=null){
                     intent.putExtra("Pfad",pictureImagePath);
                 }
-                //importedPhoto.buildDrawingCache();
-                //Bitmap bitmap = importedPhoto.getDrawingCache();
-                //intent.putExtra("Bitmap", bitmap);
+                intent.putExtra("Typ",importedPhoto.canvasTypeTri);
+
                 startActivity(intent);
 
                 return true;

@@ -35,8 +35,8 @@ public class ThirdActivity extends AppCompatActivity {
     private int currIndex = 0;  //first existing point
 
     private ImageButton connectButton;
-    private TriangleCanvas topView; //first picture+points+triangles of ImportAndEnterActivity
-    private PointCanvas frontView; //second picture+points
+    private ShapeCanvas topView; //first picture+points+triangles of ImportAndEnterActivity
+    private ShapeCanvas frontView; //second picture+points
     private Toolbar customToolbar;
 
     private String pictureImagePath = "";
@@ -48,16 +48,16 @@ public class ThirdActivity extends AppCompatActivity {
         setContentView(R.layout.activity_third);
 
         //TODO - create correct toolbar
-        customToolbar = (Toolbar) findViewById(R.id.menu_ToolbarTA);
-        setSupportActionBar(customToolbar);
+        //customToolbar = (Toolbar) findViewById(R.id.menu_ToolbarTA);
+        //setSupportActionBar(customToolbar);
 
         //P1 - topView
         //TODO - import topView and point/triangle-data - done.
-        topView = (TriangleCanvas) findViewById(R.id.pictureTop);
+        topView = (ShapeCanvas) findViewById(R.id.pictureTop);
         topView = FirstActivity.importedPhoto;
         //TODO - import frontView and point-data - done.
         //P2 - frontView
-        frontView = (PointCanvas) findViewById(R.id.pictureFront);
+        frontView = (ShapeCanvas) findViewById(R.id.pictureFront);
         frontView = SecondActivity.importedPhoto;
 
         //TODO - translate topView and its data to 3-D-Objects - done.
@@ -85,7 +85,7 @@ public class ThirdActivity extends AppCompatActivity {
         //TODO - encapsulate connectButton.setOnClickListener in Iterating-method ?
         //iterate over points in topView
         //begin iteration
-        topView.setSelectedPoint(topView.points.get(currIndex));
+        /*topView.setSelectedPoint(topView.points.get(currIndex));
 
         //TODO - create list of points in topView - in TriangleCanvas - done.
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -99,10 +99,11 @@ public class ThirdActivity extends AppCompatActivity {
                 //TODO - implement 3DP.setPointF(PointF) - done.
                 //currIndex = points3D.indexOf(topView.getSelectedPoint());
                 //set PointF-value of P3D-obj @ currIndex to relevant value from frontView
-                points3D.get(currIndex).set(frontView.points.get(frontView.getSelectedPoint()));
+                points3D.get(currIndex).x = frontView.points.get(frontView.selectedPointIndex).x;
+                points3D.get(currIndex).y = frontView.points.get(frontView.selectedPointIndex).y;
                 //currentTVPoint.setYValue(currentFVPoint.y); SEE ABOVE
                 //deselect all points in frontView
-                frontView.selectedPoint = -1;
+                frontView.selectedPointIndex = -1;
                 //next, increment currIndex
                 currIndex++;
                 if(currIndex<topView.points.size()){
@@ -111,15 +112,17 @@ public class ThirdActivity extends AppCompatActivity {
                     Toast.makeText(ThirdActivity.this, "Alle Punkte identifiziert.", Toast.LENGTH_SHORT).show();
                 }
             }
-        });
+        });*/
 
     }
 
+    /*
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_toolbar3, menu);
+    public boolean onCreateOptionsMenu(Menu menu3) {
+        getMenuInflater().inflate(R.menu.menu_toolbar3, menu3);
         return true;
     }
+    */
 
     @Override
     public void onBackPressed() {

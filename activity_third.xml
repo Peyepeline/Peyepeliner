@@ -8,6 +8,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.core.peyepeliner.ThirdActivity">
     <!--> create new menu toolbar for connect-activity <\!-->
+    <!-->
     <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/menu_ToolbarTA"
@@ -18,7 +19,9 @@
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat"/>
-    <com.example.core.peyepeliner.TriangleCanvas
+    </!-->
+
+    <com.example.core.peyepeliner.ShapeCanvas
         android:id="@+id/pictureTop"
         android:layout_width="match_parent"
         android:layout_height="450px" />
@@ -36,7 +39,7 @@
             android:src="@android:drawable/ic_menu_add"/>
 
     </LinearLayout>
-    <com.example.core.peyepeliner.PointCanvas
+    <com.example.core.peyepeliner.ShapeCanvas
         android:id="@+id/pictureFront"
         android:layout_width="match_parent"
         android:layout_height="450px" />

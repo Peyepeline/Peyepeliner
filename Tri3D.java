@@ -6,9 +6,7 @@ package com.example.core.peyepeliner;
 
 import android.graphics.*;
 
-import java.io.Serializable;
-
-class Tri3D{
+class Tri3D {
 
     //TODO - implement methods of Triangle-class
 

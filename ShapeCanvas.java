@@ -133,7 +133,10 @@ public class ShapeCanvas extends ImageView {
         return this.selectedTriangle;
     }
 
-    public void setSelectedPoint(int x, int y){    //methode zum setten: selectedPoint|selectedPointIndex
+    public void setSelectedPoint(int x, int y){ //methode zum setten: selectedPoint|selectedPointIndex
+        if(points.isEmpty()){
+            return;
+        }
         PointF checkPos = new PointF(x, y);
         this.setSelectedPoint(getClosestPoint(checkPos));
         //Index:
@@ -309,6 +312,9 @@ public class ShapeCanvas extends ImageView {
                 currPt = pointInArrayList;
                 currAbstand = abstand(pos, currPt.getPointF());
             }
+        }
+        if(!canvasTypeTri){
+            return currPt;
         }
         //return currPt;
         Tri3D currentTriangle = this.firstTriangle;

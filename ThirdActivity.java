@@ -53,12 +53,51 @@ public class ThirdActivity extends AppCompatActivity {
 
         //P1 - topView
         //TODO - import topView and point/triangle-data - done.
+
         topView = (ShapeCanvas) findViewById(R.id.pictureTop);
-        topView = FirstActivity.importedPhoto;
+        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+            topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
+        }
+
         //TODO - import frontView and point-data - done.
         //P2 - frontView
         frontView = (ShapeCanvas) findViewById(R.id.pictureFront);
-        frontView = SecondActivity.importedPhoto;
+        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+            frontView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
+                    getIntent().getFloatArrayExtra("ZPunkte"));
+        }
+
+        if(getIntent().getBooleanExtra("TypBild2",false)){ //wenn das zweite Bild TopView war
+            if(getIntent().getStringExtra("Bild2")!=null) { //Test
+                File imgFile = new File(getIntent().getStringExtra("Bild2"));
+                if (imgFile.exists()) {
+                    Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    topView.setImageBitmap(photo); //Verknuepfe zweites Bild mit TopView
+                }
+            }
+            if(getIntent().getStringExtra("Bild1")!=null) { //Test
+                File imgFile = new File(getIntent().getStringExtra("Bild1"));
+                if (imgFile.exists()) {
+                    Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    frontView.setImageBitmap(photo); //Verknuepfe erstes Bild mit frontView
+                }
+            }
+        }else{ //wenn das zweite Bild Sideview war
+            if(getIntent().getStringExtra("Bild2")!=null) { //Test
+                File imgFile = new File(getIntent().getStringExtra("Bild2"));
+                if (imgFile.exists()) {
+                    Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    frontView.setImageBitmap(photo); //Verknuepfe zweites Bild mit frontView
+                }
+            }
+            if(getIntent().getStringExtra("Bild1")!=null) { //Test
+                File imgFile = new File(getIntent().getStringExtra("Bild1"));
+                if (imgFile.exists()) {
+                    Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    topView.setImageBitmap(photo); //Verknuepfe erstes Bild mit topView
+                }
+            }
+        }
 
         //TODO - translate topView and its data to 3-D-Objects - done.
         //first populate point list

@@ -124,7 +124,8 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
         item = menu1.findItem(R.id.action_delTriFA);
         item.setVisible(picTaken && importedPhoto.canvasTypeTri);
         item = menu1.findItem(R.id.action_nextActivityFA);
-        item.setVisible(picTaken && importedPhoto.canvasTypeTri);
+        item.setVisible(picTaken);
+        //item.setVisible(picTaken && importedPhoto.canvasTypeTri);
 		//SideView
 		//importedPhoto.canvasTypeTri = false;
 		//via additional XOR
@@ -143,7 +144,8 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
         item = menu1.findItem(R.id.action_delEvSA);
         item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
         item = menu1.findItem(R.id.action_nextActivitySA);
-        item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
+        item.setVisible(false);
+        //item.setVisible((picTaken && importedPhoto.canvasTypeTri) ^ picTaken);
         return true;
     }
 
@@ -202,20 +204,24 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
                 //startActivity(new Intent(this, SecondActivity.class));
                 Intent intent = new Intent(getApplicationContext(), SecondActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                if(importedPhoto.points!=null) {
-                    intent.putExtra("XPunkte", importedPhoto.getPointArray('x'));
-                    intent.putExtra("YPunkte", importedPhoto.getPointArray('y'));
-                    intent.putExtra("ZPunkte", importedPhoto.getPointArray('z'));
+                if(importedPhoto.canvasTypeTri) {
+                    if (importedPhoto.getFirstTriangle() != null) {
+                        intent.putExtra("Dreiecke", importedPhoto.getTriangleArray());
+                    }
+                }else {
+                    if(importedPhoto.points!=null) {
+                        intent.putExtra("XPunkte", importedPhoto.getPointArray('x'));
+                        intent.putExtra("YPunkte", importedPhoto.getPointArray('y'));
+                        intent.putExtra("ZPunkte", importedPhoto.getPointArray('z'));
+                    }
                 }
-                if(importedPhoto.getFirstTriangle()!=null) {
-                    intent.putExtra("Dreiecke", importedPhoto.getTriangleArray());
-                }
-                if(pictureImagePath!=null){
-                    intent.putExtra("Pfad",pictureImagePath);
+                if (pictureImagePath != null) {
+                    intent.putExtra("Pfad", pictureImagePath);
                 }
                 //importedPhoto.buildDrawingCache();
                 //Bitmap bitmap = importedPhoto.getDrawingCache();
                 //intent.putExtra("Bitmap", bitmap);
+		        intent.putExtra("Typ",importedPhoto.canvasTypeTri);
                 startActivity(intent);
 
                 return true;
@@ -258,20 +264,23 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
     public void onPositiveClick(int item) {
         switch (item) {
             case 0:
-                //TopView
-                importedPhoto.canvasTypeTri = true;
-				//chose correct buttons to show
-				picTaken = true;
-				//via boolean comparative
-				//TODO - give reaction to choice - only in 2ndAct.
+                if(pictureImagePath!=null) {
+                    //TopView
+                    importedPhoto.canvasTypeTri = true;
+                    //chose correct buttons to show
+                    picTaken = true;
+                    //via boolean comparative
+                    //TODO - give reaction to choice - only in 2ndAct.
+                }
                 break;
             case 1:
-                //Side-|FrontView
-                importedPhoto.canvasTypeTri = false;
-				//chose correct buttons to show
-				picTaken = true;
-				//via boolean comparative
-				//TODO - give reaction to choice - only in 2ndAct.
+                if(pictureImagePath!=null) {//Side-|FrontView
+                    importedPhoto.canvasTypeTri = false;
+                    //chose correct buttons to show
+                    picTaken = true;
+                    //via boolean comparative
+                    //TODO - give reaction to choice - only in 2ndAct.
+                }
                 break;
         }
         Toast.makeText(FirstActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();

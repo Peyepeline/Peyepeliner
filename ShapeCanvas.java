@@ -10,6 +10,8 @@ import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ImageView;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -101,7 +103,7 @@ public class ShapeCanvas extends ImageView {
 
     public void setOperationID(int x){
         //mit test auf validität
-        if (x<=3 && x>=0){
+        if (x<=4 && x>=0){
             this.operationID = x;
         }else{
             this.operationID = 0;    // "Dreieck auswählen" als standard-fallback
@@ -131,7 +133,10 @@ public class ShapeCanvas extends ImageView {
         return this.selectedTriangle;
     }
 
-    public void setSelectedPoint(int x, int y){    //methode zum setten: selectedPoint|selectedPointIndex
+    public void setSelectedPoint(int x, int y){ //methode zum setten: selectedPoint|selectedPointIndex
+        if(points.isEmpty()){
+            return;
+        }
         PointF checkPos = new PointF(x, y);
         this.setSelectedPoint(getClosestPoint(checkPos));
         //Index:
@@ -190,6 +195,25 @@ public class ShapeCanvas extends ImageView {
         P3D newPoint2 = new P3D(point2);
         P3D newPoint3 = new P3D(point3);
         Tri3D newTriangle = new Tri3D(newPoint1, newPoint2, newPoint3, newTriangleId++);
+
+        if(this.firstTriangle==null){
+            this.firstTriangle = newTriangle;
+            this.lastTriangle = this.firstTriangle;
+            this.anzahl = 1;
+        }else {
+            this.lastTriangle.setNextTriangle(newTriangle);
+            this.lastTriangle = newTriangle;
+            //this.lastTriangle = this.lastTriangle.getNextTriangle();
+            this.anzahl++;
+        }
+        //TODO - adjust connectTri(tri) for 1080x1920-screen resolution (10px too small) - Wurstfingersyndrom
+        connectTri(newTriangle);    //works, BUT: need to adjust distance values regarding screenResolution...
+        //try: 50?
+    }
+
+    public void addTri(P3D point1, P3D point2, P3D point3){ // wird in rebuildFormerTriangle aufgerufen
+
+        Tri3D newTriangle = new Tri3D(point1, point2, point3, newTriangleId++);
 
         if(this.firstTriangle==null){
             this.firstTriangle = newTriangle;
@@ -289,6 +313,9 @@ public class ShapeCanvas extends ImageView {
                 currAbstand = abstand(pos, currPt.getPointF());
             }
         }
+        if(!canvasTypeTri){
+            return currPt;
+        }
         //return currPt;
         Tri3D currentTriangle = this.firstTriangle;
         while(currentTriangle!=null) {
@@ -370,6 +397,11 @@ public class ShapeCanvas extends ImageView {
                             invalidate();
                             break;
 
+                        case 4:
+                            setSelectedPoint(Math.round(x),Math.round(y));
+                            invalidate();
+                            break;
+
                         default:
                             setSelectedTri(Math.round(x),Math.round(y));
                     }
@@ -412,6 +444,13 @@ public class ShapeCanvas extends ImageView {
                             deleteEverything();
                             invalidate();
                             break;
+
+                        //NEED THIS FOR ACTIVITY 3!
+                        case 4:
+                            setSelectedPoint(Math.round(x),Math.round(y));
+                            invalidate();
+                            break;
+
                         default:
                             setSelectedPoint(Math.round(x),Math.round(y));
                             invalidate();
@@ -475,6 +514,62 @@ public class ShapeCanvas extends ImageView {
             }
         }
     }
+
+    public float[] getPointArray(char coordinate){ //Zum Verschieben der Punkte von Activity zu Activity
+        float[] pointArray = new float[points.size()];
+        if(coordinate=='x'){
+            for(int i=0;i<this.points.size();i++){
+                pointArray[i] = this.points.get(i).x;
+            }
+            return pointArray;
+        }
+        if(coordinate=='y'){
+            for(int i=0;i<this.points.size();i++){
+                pointArray[i] = this.points.get(i).y;
+            }
+            return pointArray;
+        }
+        for(int i=0;i<this.points.size();i++){
+            pointArray[i] = this.points.get(i).z;
+        }
+        return pointArray;
+    }
+
+    public void rebuildFormerPoints(float[] XPoints, float[] YPoints, float ZPoints[]){ //falls es in einer früheren Activity schon Punkte gab
+        for(int i=0;i<XPoints.length;i++){
+            this.points.add(new P3D(XPoints[i],YPoints[i],ZPoints[i]));
+        }
+    }
+
+    public float[] getTriangleArray(){ //Zum Verschieben der Dreiecke von Activity zu Activity
+        int laenge = this.anzahl*3*3;
+        float[] triangleArray = new float[laenge];
+        Tri3D current = this.firstTriangle;
+        for(int i=0;i<laenge;i++){
+            triangleArray[i++] = current.getp0().x;
+            triangleArray[i++] = current.getp0().y;
+            triangleArray[i++] = current.getp0().z;
+            triangleArray[i++] = current.getp1().x;
+            triangleArray[i++] = current.getp1().y;
+            triangleArray[i++] = current.getp1().z;
+            triangleArray[i++] = current.getp2().x;
+            triangleArray[i++] = current.getp2().y;
+            triangleArray[i] = current.getp2().z;
+            current = current.getNextTriangle();
+        }
+        return triangleArray;
+    }
+
+    public void rebuildFormerTriangles(float[] formerTriangles){ //falls es in einer früheren Activity schon Dreiecke gab
+        for(int i=0;i<formerTriangles.length;i++){
+            P3D p0 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i++]);
+            P3D p1 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i++]);
+            P3D p2 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i]);
+            this.addTri(p0, p1, p2);
+        }
+        invalidate();
+    }
+
 
     /*
     //HEREAFTER BE ENTZERRUNG

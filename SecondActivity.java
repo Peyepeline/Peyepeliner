@@ -67,13 +67,14 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
             }
         });
 
-        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+        /*if(getIntent().getFloatArrayExtra("XPunkte")!=null){
             importedPhoto.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
                     getIntent().getFloatArrayExtra("ZPunkte"));
         }
         if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
             importedPhoto.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
-        }
+        }*/
+        //importedPhoto.canvasTypeTri = !getIntent().getBooleanExtra("Typ",true);
         /*if(getIntent().getStringExtra("Pfad")!=null){ //Test
             File imgFile = new  File(getIntent().getStringExtra("Pfad"));
             if(imgFile.exists()){
@@ -112,7 +113,8 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
         item = menu2.findItem(R.id.action_delTriFA);
         item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
         item = menu2.findItem(R.id.action_nextActivityFA);
-        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+        item.setVisible(false);
+        //item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
 		//SideView
 		//importedPhoto.canvasTypeTri = false;
 		//via additional XOR
@@ -131,7 +133,8 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
         item = menu2.findItem(R.id.action_delEvSA);
         item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
         item = menu2.findItem(R.id.action_nextActivitySA);
-        item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
+        item.setVisible(pic2Taken);
+        //item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
         return true;
     }
 
@@ -179,6 +182,35 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 //startActivity(new Intent(this, SecondActivity.class));
                 Intent intent = new Intent(getApplicationContext(), ThirdActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                if(importedPhoto.canvasTypeTri){
+                    if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+                        intent.putExtra("XPunkte",getIntent().getFloatArrayExtra("XPunkte"));
+                        intent.putExtra("YPunkte",getIntent().getFloatArrayExtra("YPunkte"));
+                        intent.putExtra("ZPunkte",getIntent().getFloatArrayExtra("ZPunkte"));
+                    }
+                    if (importedPhoto.getFirstTriangle() != null) {
+                        intent.putExtra("Dreiecke", importedPhoto.getTriangleArray());
+                    }
+                }else{
+                    if(importedPhoto.points!=null) {
+                        intent.putExtra("XPunkte", importedPhoto.getPointArray('x'));
+                        intent.putExtra("YPunkte", importedPhoto.getPointArray('y'));
+                        intent.putExtra("ZPunkte", importedPhoto.getPointArray('z'));
+                    }
+                    if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+                        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+                            intent.putExtra("Dreiecke", getIntent().getFloatArrayExtra("Dreiecke"));
+                        }
+                    }
+                }
+
+                if(getIntent().getStringExtra("Pfad")!=null){
+                    intent.putExtra("PfadBild1", getIntent().getStringExtra("Pfad"));
+                }
+                if(pictureImagePath!=null){
+                    intent.putExtra("PfadBild2",pictureImagePath);
+                }
+                intent.putExtra("TypBild2",importedPhoto.canvasTypeTri);
                 startActivity(intent);
                 return true;
 				
@@ -223,18 +255,22 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
     public void onPositiveClick(int item) {
         switch (item) {
             case 0:
-                //TopView
-                importedPhoto.canvasTypeTri = true;
-				pic2Taken = true;
-				//via boolean comparative
-				//TODO - give reaction to choice - only in 2ndAct.
+                if(pictureImagePath!=null) {
+                    //TopView
+                    importedPhoto.canvasTypeTri = true;
+                    pic2Taken = true;
+                    //via boolean comparative//
+                    // TODO - give reaction to choice - only in 2ndAct.
+                }
                 break;
             case 1:
                 //Side-|FrontView
-                importedPhoto.canvasTypeTri = false;
-				pic2Taken = true;
-				//via boolean comparative
-				//TODO - give reaction to choice - only in 2ndAct.
+                if(pictureImagePath!=null) {
+                    importedPhoto.canvasTypeTri = false;
+                    pic2Taken = true;
+                    //via boolean comparative
+                    //TODO - give reaction to choice - only in 2ndAct.
+                }
                 break;
         }
         Toast.makeText(SecondActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();

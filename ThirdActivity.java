@@ -6,10 +6,12 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -31,12 +33,21 @@ public class ThirdActivity extends AppCompatActivity {
 
     //deprecated? call topView.populatePointList() and use topView.points
     //TODO - change data type to P3D - done.
-    public ArrayList<P3D> points3D = new ArrayList<P3D>();
+    public ArrayList<P3D> points3D = new ArrayList<P3D>(); //P3D-liste mit punkten (3-koord.) für modell
+    public ArrayList<P3D> originalRing = new ArrayList<P3D>();
     private int currIndex = 0;  //first existing point
 
     private ImageButton connectButton;
+    private boolean connectInProgress = false;
+    //TODO - make those 2 pts selectable...
+    private P3D p1ForConnect;
+    private P3D p2ForConnect;
+    //pts. for RingScaling etc.pp.
+    private P3D extremPtLinks = null;
+    private P3D extremPtRechts = null;
+
     private ShapeCanvas topView; //first picture+points+triangles of ImportAndEnterActivity
-    private ShapeCanvas frontView; //second picture+points
+    private ShapeCanvas bottomView; //second picture+points
     private Toolbar customToolbar;
 
     private String pictureImagePath = "";
@@ -47,72 +58,207 @@ public class ThirdActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_third);
 
-        //TODO - create correct toolbar
         //customToolbar = (Toolbar) findViewById(R.id.menu_ToolbarTA);
         //setSupportActionBar(customToolbar);
 
         //P1 - topView
         //TODO - import topView and point/triangle-data - done.
+
         topView = (ShapeCanvas) findViewById(R.id.pictureTop);
-        topView = FirstActivity.importedPhoto;
+        topView.canvasTypeTri=true;
+        topView.initCPaint();
+
+
         //TODO - import frontView and point-data - done.
         //P2 - frontView
-        frontView = (ShapeCanvas) findViewById(R.id.pictureFront);
-        frontView = SecondActivity.importedPhoto;
+        bottomView = (ShapeCanvas) findViewById(R.id.pictureBottom);
+        bottomView.canvasTypeTri=false;
+        bottomView.initCPaint();
 
-        //TODO - translate topView and its data to 3-D-Objects - done.
+        //welches Bild an welche Stelle, abhängig von canvasTypeTri
+        if(getIntent().getBooleanExtra("TypBild2",false)){ //wenn das zweite Bild TopView war
+            if(getIntent().getStringExtra("PfadBild1")!=null) { //Test
+                File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
+                if (imgFile2.exists()) {
+                    Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    bottomView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit frontView
+                }
+            }
+            if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
+                File imgFile1 = new File(getIntent().getStringExtra("PfadBild2"));
+                if (imgFile1.exists()) {
+                    Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
+                    topView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit TopView
+                }
+            }
+
+        }else{ //wenn das zweite Bild Sideview war
+            if(getIntent().getStringExtra("PfadBild1")!=null) { //Test
+                File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
+                if (imgFile2.exists()) {
+                    Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    topView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit topView
+                }
+            }
+            if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
+                File imgFile1 = new File(getIntent().getStringExtra("PfadBild2"));
+                if (imgFile1.exists()) {
+                    Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
+                    bottomView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit frontView
+                }
+            }
+        }
+
+        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+            topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
+        }
+        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+            bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
+                    getIntent().getFloatArrayExtra("ZPunkte"));
+        }
+
+        //TODO - get RingPath from topView
         //first populate point list
         topView.populatePointList();
         //then create 3-D-Point-List corresponding to it
         points3D.clear();
-		//TODO - test: arraylist cloneable?
-		//points3D = topView.points.clone();
-		//bloedsinn, y-coord wird z-coord in neuer liste...
-		for (P3D pointInTV : topView.points) {
-            points3D.add(new P3D(pointInTV.y)); // constructor with float only, remainder later
+        originalRing.clear();   //later: fill and use for scaled ring data (modell rotationskörper)
+        //fill RingList
+        //topView(x)=reality(x), topView(y)=reality(z), reality(y) not in topView
+        for (P3D pointInTV : topView.points) {
+            points3D.add(new P3D(pointInTV.x, 0, pointInTV.y));
         }
+        //TODO - points3D: fill in missing y-data (calculate via bottomView)
 		/*
         for (PointF pointInTV : topView.points) {
             //copy point data
-            //TODO - implement correct 3DPointConstructor/coordinate-setter - done.
             //constructor with PointF and z-coordinate
             //PointF pointInTV in Point3D is later overwritten by coordinate data from point in frontView
             points3D.add(new P3D(pointInTV.y)); // constructor with float only, remainder later
         }
 		*/
 
-        connectButton = (ImageButton) findViewById(R.id.connectButtonTA);
-        //TODO - encapsulate connectButton.setOnClickListener in Iterating-method ?
-        //iterate over points in topView
-        //begin iteration
-        /*topView.setSelectedPoint(topView.points.get(currIndex));
-
-        //TODO - create list of points in topView - in TriangleCanvas - done.
-        connectButton.setOnClickListener(new View.OnClickListener() {
+		//TODO - override onTouches for both pictures?
+        topView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                //TODO - implement method for 3-D-Point-creation - done.
-                //currentTVPoint = topView.getSelectedPoint();
-                //currentFVPoint = frontView.points.get(frontView.getSelectedPoint())
-                //NEWPOINT3DTESTER(currentTVPoint, currentFVPoint);
-                //
-                //TODO - implement 3DP.setPointF(PointF) - done.
-                //currIndex = points3D.indexOf(topView.getSelectedPoint());
-                //set PointF-value of P3D-obj @ currIndex to relevant value from frontView
-                points3D.get(currIndex).x = frontView.points.get(frontView.selectedPointIndex).x;
-                points3D.get(currIndex).y = frontView.points.get(frontView.selectedPointIndex).y;
-                //currentTVPoint.setYValue(currentFVPoint.y); SEE ABOVE
-                //deselect all points in frontView
-                frontView.selectedPointIndex = -1;
-                //next, increment currIndex
-                currIndex++;
-                if(currIndex<topView.points.size()){
-                    topView.setSelectedPoint(topView.points.get(currIndex));
+            public boolean onTouch(View v, MotionEvent event){
+                //select "selectPoint" as current Operation
+                topView.setOperationID(4);
+                topView.onTouchEvent(event);
+                //get now selected Point
+                p1ForConnect = topView.getSelectedPoint();
+                //finish
+                return true;
+            }
+        });
+
+        bottomView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event){
+                //select "selectPoint" as current Operation
+                bottomView.setOperationID(4);
+                bottomView.onTouchEvent(event);
+                //get now selected Point
+                p2ForConnect = bottomView.getSelectedPoint();
+                //finish
+                return true;
+            }
+        });
+
+        connectButton = (ImageButton) findViewById(R.id.connectButtonTA);
+        connectButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                //TODO - onClickEvent? - s.u.
+                if(!connectInProgress){
+                    //first buttonPressEvent
+                    //to be sure, clear selectedPoints (set indexes in arrayList to -1)
+                    topView.selectedPointIndex = -1;
+                    bottomView.selectedPointIndex = -1;
+                    p1ForConnect = null;
+                    p2ForConnect = null;
+                    //start connecting-process
+                    connectInProgress = true;
+                    if((extremPtLinks == null) && (extremPtRechts == null)){    //(null, !null) durch if(!connectInProgress) abgefangen
+                        Toast.makeText(ThirdActivity.this, "Markiere extremes linkes Punktepaar.", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(ThirdActivity.this, "Markiere extremes rechtes Punktepaar.", Toast.LENGTH_SHORT).show();
+                    }
+                    //Toast.makeText(ThirdActivity.this, "Markiere erstes Punktepaar.", Toast.LENGTH_SHORT).show();
                 }else{
-                    Toast.makeText(ThirdActivity.this, "Alle Punkte identifiziert.", Toast.LENGTH_SHORT).show();
+                    //second buttonPressEvent
+                    //check on existence of 2 selected points (1 each)
+                    //TODO - use 2 distinct variables for the 2 selected points - done.
+                    //TODO - ONTOUCHEVENT + connectInProgress =  p1ForConnect|p2ForConnect !!!
+                    //if((topView.getSelectedPointIndex() != -1) && (bottomView.getSelectedPointIndex() != -1)){
+                    if((p1ForConnect != null) && (p2ForConnect != null)){
+                        //1 pkt each selected: continue!
+                        //in points3D: fill in missing y-coord. of point
+                        for (P3D pointInPoints3D : points3D) {
+                            //find corresponding point to p1ForConnect in points3D
+                            if((pointInPoints3D.x == p1ForConnect.x) && (pointInPoints3D.z == p1ForConnect.y)) {
+                                //fill in y-coord.
+                                pointInPoints3D.y = p2ForConnect.y;
+                                //TODO - is this byReference or byValue???
+                                if(extremPtLinks == null){
+                                    extremPtLinks = pointInPoints3D;
+                                }else{
+                                    extremPtRechts = pointInPoints3D;
+                                }
+                            }
+                        }
+                        //clear connectInProgress state
+                        connectInProgress = false;
+                        //if both extreme pts connected cross-View, disable (connect!)-button!
+                        connectButton.setEnabled(false);
+                        connectButton.setClickable(false);
+                        connectButton.setAlpha(.5f);
+                    }else{
+                        //error: select 1 pkt each!
+                        Toast.makeText(ThirdActivity.this, "Je 1 Punkt muss markiert sein!", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
-        });*/
+        });
+
+        //onCreate: markiere topView(NICHTS), bottomView(NICHTS)
+        //onButtonConnectPressed:
+        /*
+        *if !connectInProgress
+        *   connectInProgress true
+        *   nachricht: "markiere erstes punktepaar"
+        *   ENTWEDER:
+        *       P1t: tap topView -> getPoint@tap-koord. +markiere farbe1
+        *       P1b: tap bottomView -> getPoint@tap-koord. +markiere farbe1
+        *   ODER:
+        *       P1b: tap bottomView -> getPoint@tap-koord. +markiere farbe1
+        *       P1t: tap topView -> getPoint@tap-koord. +markiere farbe1
+        *else
+        *   if P1t != null && P1b !=null
+        *       //in points3D:
+        *       P1t.y = P1b.y //(valueOf!!!)
+        *       connectInProgress false
+        *   else error-msg ("je 1 pkt auswählen!")
+        * */
+
+        //onButtonConnect2Pressed:
+        /*
+        *if !connectInProgress
+        *   connectInProgress true
+        *   nachricht: "markiere zweites punktepaar"
+        *   ENTWEDER:
+        *       P2t: tap topView -> getPoint@tap-koord. +markiere farbe2
+        *       P2b: tap bottomView -> getPoint@tap-koord. +markiere farbe2
+        *   ODER:
+        *       P2b: tap bottomView -> getPoint@tap-koord. +markiere farbe2
+        *       P2t: tap topView -> getPoint@tap-koord. +markiere farbe2
+        *else
+        *   if P2t != null && P2b !=null
+        *       //in points3D:
+        *       P2t.y = P2b.y //(valueOf!!!)
+        *       connectInProgress false
+        *   else error-msg ("je 1 pkt auswählen!")
+        * */
 
     }
 

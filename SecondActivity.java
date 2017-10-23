@@ -113,7 +113,8 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
         item = menu2.findItem(R.id.action_delTriFA);
         item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
         item = menu2.findItem(R.id.action_nextActivityFA);
-        item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
+        item.setVisible(false);
+        //item.setVisible(pic2Taken && importedPhoto.canvasTypeTri);
 		//SideView
 		//importedPhoto.canvasTypeTri = false;
 		//via additional XOR
@@ -132,7 +133,8 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
         item = menu2.findItem(R.id.action_delEvSA);
         item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
         item = menu2.findItem(R.id.action_nextActivitySA);
-        item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
+        item.setVisible(pic2Taken);
+        //item.setVisible((pic2Taken && importedPhoto.canvasTypeTri) ^ pic2Taken);
         return true;
     }
 
@@ -202,11 +204,9 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                     }
                 }
 
-                if(importedPhoto.getFirstTriangle()!=null) {
-                    intent.putExtra("Dreiecke", importedPhoto.getTriangleArray());
-                }
                 if(getIntent().getStringExtra("Pfad")!=null){
-                    intent.putExtra("PfadBild1", getIntent().getStringExtra("Pfad"));
+                    String str = getIntent().getStringExtra("Pfad");
+                    intent.putExtra("PfadBild1", str);
                 }
                 if(pictureImagePath!=null){
                     intent.putExtra("PfadBild2",pictureImagePath);
@@ -256,18 +256,22 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
     public void onPositiveClick(int item) {
         switch (item) {
             case 0:
-                //TopView
-                importedPhoto.canvasTypeTri = true;
-				pic2Taken = true;
-				//via boolean comparative
-				//TODO - give reaction to choice - only in 2ndAct.
+                if(pictureImagePath!=null) {
+                    //TopView
+                    importedPhoto.canvasTypeTri = true;
+                    pic2Taken = true;
+                    //via boolean comparative//
+                    // TODO - give reaction to choice - only in 2ndAct.
+                }
                 break;
             case 1:
                 //Side-|FrontView
-                importedPhoto.canvasTypeTri = false;
-				pic2Taken = true;
-				//via boolean comparative
-				//TODO - give reaction to choice - only in 2ndAct.
+                if(pictureImagePath!=null) {
+                    importedPhoto.canvasTypeTri = false;
+                    pic2Taken = true;
+                    //via boolean comparative
+                    //TODO - give reaction to choice - only in 2ndAct.
+                }
                 break;
         }
         Toast.makeText(SecondActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();

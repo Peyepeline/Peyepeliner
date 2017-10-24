@@ -53,6 +53,9 @@ public class ShapeCanvas extends ImageView {
     private int anzahl = 0;
     public int selectedPointIndex = -1; //Position von selectedPoint in ArrayList
 
+    public int OriginalAbmessungX;
+    public float OriginalAbmessungY;
+
     /*
     //ENTZERRUNG
     //wird noch nicht gebraucht, ergo: auskommentieren
@@ -535,9 +538,9 @@ public class ShapeCanvas extends ImageView {
         return pointArray;
     }
 
-    public void rebuildFormerPoints(float[] XPoints, float[] YPoints, float ZPoints[]){ //falls es in einer früheren Activity schon Punkte gab
+    public void rebuildFormerPoints(float[] XPoints, float[] YPoints, float ZPoints[], float faktor){ //falls es in einer früheren Activity schon Punkte gab
         for(int i=0;i<XPoints.length;i++){
-            this.points.add(new P3D(XPoints[i],YPoints[i],ZPoints[i]));
+            this.points.add(new P3D(XPoints[i]*faktor,YPoints[i]*faktor,ZPoints[i]*faktor));
         }
     }
 

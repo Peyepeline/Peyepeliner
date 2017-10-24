@@ -35,7 +35,6 @@
 
     <com.example.core.peyepeliner.ShapeCanvas
         android:id="@+id/pictureTop"
-        android:scaleType="fitCenter"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/middleButtonBar" />
@@ -58,7 +57,6 @@
     </LinearLayout>
     <com.example.core.peyepeliner.ShapeCanvas
         android:id="@+id/pictureBottom"
-        android:scaleType="fitCenter"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/middleButtonBar" />

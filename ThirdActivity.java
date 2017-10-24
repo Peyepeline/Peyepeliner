@@ -65,25 +65,26 @@ public class ThirdActivity extends AppCompatActivity {
         //TODO - import topView and point/triangle-data - done.
 
         topView = (ShapeCanvas) findViewById(R.id.pictureTop);
-        topView.canvasTypeTri=true;
-        topView.initCPaint();
-
+        topView.canvasTypeTri = true;
+        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+            topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
+        }
 
         //TODO - import frontView and point-data - done.
         //P2 - frontView
         bottomView = (ShapeCanvas) findViewById(R.id.pictureBottom);
-        bottomView.canvasTypeTri=false;
-        bottomView.initCPaint();
-
+        bottomView.canvasTypeTri = false;
+        if(getIntent().getIntExtra("OrigAbmessX",1)!=0){
+            bottomView.OriginalAbmessungX = getIntent().getIntExtra("OrigAbmessX",1);
+        }
+        float scaleFactor = bottomView.getWidth() / bottomView.OriginalAbmessungX;//new/old;
+        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+            bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
+                    getIntent().getFloatArrayExtra("ZPunkte"), scaleFactor);
+        }
         //welches Bild an welche Stelle, abhängig von canvasTypeTri
+        //TODO - find out reason of crash on 2ndView-bitmapping (size?)
         if(getIntent().getBooleanExtra("TypBild2",false)){ //wenn das zweite Bild TopView war
-            if(getIntent().getStringExtra("PfadBild1")!=null) { //Test
-                File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
-                if (imgFile2.exists()) {
-                    Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
-                    bottomView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit frontView
-                }
-            }
             if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
                 File imgFile1 = new File(getIntent().getStringExtra("PfadBild2"));
                 if (imgFile1.exists()) {
@@ -91,15 +92,14 @@ public class ThirdActivity extends AppCompatActivity {
                     topView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit TopView
                 }
             }
-
-        }else{ //wenn das zweite Bild Sideview war
-            if(getIntent().getStringExtra("PfadBild1")!=null) { //Test
+            if(getIntent().getStringExtra("PfadBild1")!=null) { //Test: WHY CRASH HERE???
                 File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
                 if (imgFile2.exists()) {
                     Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
-                    topView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit topView
+                    bottomView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit frontView
                 }
             }
+        }else{ //wenn das zweite Bild Sideview war
             if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
                 File imgFile1 = new File(getIntent().getStringExtra("PfadBild2"));
                 if (imgFile1.exists()) {
@@ -107,14 +107,13 @@ public class ThirdActivity extends AppCompatActivity {
                     bottomView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit frontView
                 }
             }
-        }
-
-        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
-            topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
-        }
-        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
-            bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
-                    getIntent().getFloatArrayExtra("ZPunkte"));
+            if(getIntent().getStringExtra("PfadBild1")!=null) { //Test: WHY CRASH HERE???
+                File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
+                if (imgFile2.exists()) {
+                    Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    topView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit topView
+                }
+            }
         }
 
         //TODO - get RingPath from topView

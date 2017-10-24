@@ -182,6 +182,7 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 //startActivity(new Intent(this, SecondActivity.class));
                 Intent intent = new Intent(getApplicationContext(), ThirdActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                intent.putExtra("OrigAbmessX", importedPhoto.OriginalAbmessungX);
                 if(importedPhoto.canvasTypeTri){
                     if(getIntent().getFloatArrayExtra("XPunkte")!=null){
                         intent.putExtra("XPunkte",getIntent().getFloatArrayExtra("XPunkte"));
@@ -205,8 +206,7 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 }
 
                 if(getIntent().getStringExtra("Pfad")!=null){
-                    String str = getIntent().getStringExtra("Pfad");
-                    intent.putExtra("PfadBild1", str);
+                    intent.putExtra("PfadBild1", getIntent().getStringExtra("Pfad"));
                 }
                 if(pictureImagePath!=null){
                     intent.putExtra("PfadBild2",pictureImagePath);

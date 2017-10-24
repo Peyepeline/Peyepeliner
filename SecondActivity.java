@@ -205,12 +205,15 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 }
 
                 if(getIntent().getStringExtra("Pfad")!=null){
-                    intent.putExtra("PfadBild1", getIntent().getStringExtra("Pfad"));
+                    String str = getIntent().getStringExtra("Pfad");
+                    intent.putExtra("PfadBild1", str);
                 }
                 if(pictureImagePath!=null){
                     intent.putExtra("PfadBild2",pictureImagePath);
                 }
                 intent.putExtra("TypBild2",importedPhoto.canvasTypeTri);
+                intent.putExtra("OrigAbmessX", importedPhoto.getWidth());
+                intent.putExtra("OrigAbmessY",importedPhoto.getHeight());
                 startActivity(intent);
                 return true;
 				

@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">pEYEpeliner</string>
+    <string name="placeholder">XplaceholderX</string>
+    <string name="takePic">Take Picture</string>
+    <string name="rotatePic">Rotate Picture</string>
+    <string name="selectTri">Select Triangle</string>
+    <string name="selectPt">Select Point</string>
+    <string name="makeTri">New Triangle</string>
+    <string name="movePoint">Move Point</string>
+    <string name="delTri">Delete Selected Triangle</string>
+    <string name="menuName">Menu</string>
+    <string name="newPoint">Neuer Punkt</string>
+    <string name="delPoint">Punkt loeschen</string>
+    <string name="delEv">Alles loeschen</string>
+    <string name="select">Punkt auswaehlen</string>
+</resources>

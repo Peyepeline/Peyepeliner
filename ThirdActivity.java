@@ -1,6 +1,7 @@
 package com.example.core.peyepeliner;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
@@ -80,14 +81,16 @@ public class ThirdActivity extends AppCompatActivity {
             if(getIntent().getStringExtra("PfadBild1")!=null) { //Test
                 File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
                 if (imgFile2.exists()) {
-                    Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    //Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    Bitmap photo2 = decodeScaledBitmap(imgFile2.getAbsolutePath());
                     bottomView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit frontView
                 }
             }
             if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
                 File imgFile1 = new File(getIntent().getStringExtra("PfadBild2"));
                 if (imgFile1.exists()) {
-                    Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
+                    //Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
+                    Bitmap photo1 = decodeScaledBitmap(imgFile1.getAbsolutePath());
                     topView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit TopView
                 }
             }
@@ -96,26 +99,28 @@ public class ThirdActivity extends AppCompatActivity {
             if(getIntent().getStringExtra("PfadBild1")!=null) { //Test
                 File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
                 if (imgFile2.exists()) {
-                    Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    //Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    Bitmap photo2 = decodeScaledBitmap(imgFile2.getAbsolutePath());
                     topView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit topView
                 }
             }
             if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
                 File imgFile1 = new File(getIntent().getStringExtra("PfadBild2"));
                 if (imgFile1.exists()) {
-                    Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
+                    //Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
+                    Bitmap photo1 = decodeScaledBitmap(imgFile1.getAbsolutePath());
                     bottomView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit frontView
                 }
             }
         }
 
-        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+        /*if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
             topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
         }
         if(getIntent().getFloatArrayExtra("XPunkte")!=null){
             bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
                     getIntent().getFloatArrayExtra("ZPunkte"));
-        }
+        }*/
 
         //TODO - get RingPath from topView
         //first populate point list
@@ -221,6 +226,8 @@ public class ThirdActivity extends AppCompatActivity {
             }
         });
 
+
+
         //onCreate: markiere topView(NICHTS), bottomView(NICHTS)
         //onButtonConnectPressed:
         /*
@@ -269,6 +276,68 @@ public class ThirdActivity extends AppCompatActivity {
         return true;
     }
     */
+
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth){
+        // Raw width of image
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+        if (width > reqWidth) {
+            final int halfWidth = width / 2;
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps width larger than the requested width.
+            while((halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
+    }
+
+    public static Bitmap decodeScaledBitmap(String imageFileAbsPath){
+        //while inJustDecodeBounds = true, bitmap remains empty but dimensions and mimeType are readable
+        //therefore: get raw dimensions with iJDB true, recalc, set with iJDB false.
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(imageFileAbsPath, options);
+        //calculate scaling
+        int maxWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        options.inSampleSize = calculateInSampleSize(options, maxWidth);
+        //decode with correct scaling
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeFile(imageFileAbsPath, options);
+    }
+
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus){
+        super.onWindowFocusChanged(hasFocus);
+
+        float neueHoehe = bottomView.getHeight();
+        float alteBreite = bottomView.getWidth();
+
+        float origHoehe = (float) getIntent().getIntExtra("OrigAbmessY",1);
+        float origBreite = (float) getIntent().getIntExtra("OrigAbmessX",1);
+
+        float scalefactor;
+        float verschiebeFactorX;
+        float verschiebeFactorY;
+
+        float bitmapbreite = bottomView.getDrawable().getIntrinsicWidth();
+        float bitmaphoehe = bottomView.getDrawable().getIntrinsicHeight();
+        float verhaeltnis = bitmaphoehe/bitmapbreite;
+
+        float neuebreite = neueHoehe/verhaeltnis;
+
+        scalefactor = neuebreite/origBreite;
+        verschiebeFactorX = (alteBreite-neuebreite)/2;
+        verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
+
+        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+            bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
+                    getIntent().getFloatArrayExtra("ZPunkte"), scalefactor, verschiebeFactorX, verschiebeFactorY);
+        }
+        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+            topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"),scalefactor,verschiebeFactorX,verschiebeFactorY);
+        }
+    }
 
     @Override
     public void onBackPressed() {

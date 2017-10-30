@@ -134,7 +134,10 @@ public class ShapeCanvas extends ImageView {
     }
 
     public void setSelectedPoint(int x, int y){ //methode zum setten: selectedPoint|selectedPointIndex
-        if(points.isEmpty()){
+        if(!canvasTypeTri&&points.isEmpty()){
+            return;
+        }
+        if(canvasTypeTri&&this.firstTriangle==null){
             return;
         }
         PointF checkPos = new PointF(x, y);
@@ -541,6 +544,12 @@ public class ShapeCanvas extends ImageView {
         }
     }
 
+    public void rebuildFormerPoints(float[] XPoints, float[] YPoints, float ZPoints[], float scale, float verschX, float verschY){ //falls es in einer früheren Activity schon Punkte gab
+        for(int i=0;i<XPoints.length;i++){
+            this.points.add(new P3D(XPoints[i]*scale+verschX,(YPoints[i]-verschY)*scale,ZPoints[i]*scale));
+        }
+    }
+
     public float[] getTriangleArray(){ //Zum Verschieben der Dreiecke von Activity zu Activity
         int laenge = this.anzahl*3*3;
         float[] triangleArray = new float[laenge];
@@ -565,6 +574,16 @@ public class ShapeCanvas extends ImageView {
             P3D p0 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i++]);
             P3D p1 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i++]);
             P3D p2 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i]);
+            this.addTri(p0, p1, p2);
+        }
+        invalidate();
+    }
+
+    public void rebuildFormerTriangles(float[] formerTriangles, float scale, float verschX, float verschY){ //falls es in einer früheren Activity schon Dreiecke gab
+        for(int i=0;i<formerTriangles.length;i++){
+            P3D p0 = new P3D(formerTriangles[i++]*scale+verschX, (formerTriangles[i++]-verschY)*scale,formerTriangles[i++]);
+            P3D p1 = new P3D(formerTriangles[i++]*scale+verschX, (formerTriangles[i++]-verschY)*scale,formerTriangles[i++]);
+            P3D p2 = new P3D(formerTriangles[i++]*scale+verschX, (formerTriangles[i++]-verschY)*scale,formerTriangles[i]);
             this.addTri(p0, p1, p2);
         }
         invalidate();

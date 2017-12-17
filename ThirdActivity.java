@@ -1,6 +1,7 @@
 package com.example.core.peyepeliner;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
@@ -36,6 +37,7 @@ public class ThirdActivity extends AppCompatActivity {
     public ArrayList<P3D> points3D = new ArrayList<P3D>(); //P3D-liste mit punkten (3-koord.) für modell
     public ArrayList<P3D> originalRing = new ArrayList<P3D>();
     private int currIndex = 0;  //first existing point
+    public Model3D MODEL = new Model3D();   //empty model to be built stepwise
 
     private ImageButton connectButton;
     private boolean connectInProgress = false;
@@ -65,61 +67,62 @@ public class ThirdActivity extends AppCompatActivity {
         //TODO - import topView and point/triangle-data - done.
 
         topView = (ShapeCanvas) findViewById(R.id.pictureTop);
-        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
-            topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
-        }
+        topView.canvasTypeTri=true;
+        topView.initCPaint();
+
 
         //TODO - import frontView and point-data - done.
         //P2 - frontView
         bottomView = (ShapeCanvas) findViewById(R.id.pictureBottom);
-        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
-            bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
-                    getIntent().getFloatArrayExtra("ZPunkte"));
-        }
+        bottomView.canvasTypeTri=false;
+        bottomView.initCPaint();
+
         //welches Bild an welche Stelle, abhängig von canvasTypeTri
         if(getIntent().getBooleanExtra("TypBild2",false)){ //wenn das zweite Bild TopView war
-            if(getIntent().getStringExtra("Bild2")!=null) { //Test
-                File imgFile = new File(getIntent().getStringExtra("Bild2"));
-                if (imgFile.exists()) {
-                    Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                    topView.setImageBitmap(photo); //Verknuepfe zweites Bild mit TopView
+            if(getIntent().getStringExtra("PfadBild1")!=null) { //Test
+                File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
+                if (imgFile2.exists()) {
+                    //Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    Bitmap photo2 = decodeScaledBitmap(imgFile2.getAbsolutePath());
+                    bottomView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit frontView
                 }
             }
-            if(getIntent().getStringExtra("Bild1")!=null) { //Test
-                File imgFile = new File(getIntent().getStringExtra("Bild1"));
-                if (imgFile.exists()) {
-                    Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                    bottomView.setImageBitmap(photo); //Verknuepfe erstes Bild mit frontView
+            if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
+                File imgFile1 = new File(getIntent().getStringExtra("PfadBild2"));
+                if (imgFile1.exists()) {
+                    //Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
+                    Bitmap photo1 = decodeScaledBitmap(imgFile1.getAbsolutePath());
+                    topView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit TopView
                 }
             }
+
         }else{ //wenn das zweite Bild Sideview war
-            if(getIntent().getStringExtra("Bild2")!=null) { //Test
-                File imgFile = new File(getIntent().getStringExtra("Bild2"));
-                if (imgFile.exists()) {
-                    Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                    bottomView.setImageBitmap(photo); //Verknuepfe zweites Bild mit frontView
+            if(getIntent().getStringExtra("PfadBild1")!=null) { //Test
+                File imgFile2 = new File(getIntent().getStringExtra("PfadBild1"));
+                if (imgFile2.exists()) {
+                    //Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
+                    Bitmap photo2 = decodeScaledBitmap(imgFile2.getAbsolutePath());
+                    topView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit topView
                 }
             }
-            if(getIntent().getStringExtra("Bild1")!=null) { //Test
-                File imgFile = new File(getIntent().getStringExtra("Bild1"));
-                if (imgFile.exists()) {
-                    Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                    topView.setImageBitmap(photo); //Verknuepfe erstes Bild mit topView
+            if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
+                File imgFile1 = new File(getIntent().getStringExtra("PfadBild2"));
+                if (imgFile1.exists()) {
+                    //Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
+                    Bitmap photo1 = decodeScaledBitmap(imgFile1.getAbsolutePath());
+                    bottomView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit frontView
                 }
             }
         }
 
-        //TODO - get RingPath from topView
-        //first populate point list
-        topView.populatePointList();
-        //then create 3-D-Point-List corresponding to it
-        points3D.clear();
-        originalRing.clear();   //later: fill and use for scaled ring data (modell rotationskörper)
-        //fill RingList
-        //topView(x)=reality(x), topView(y)=reality(z), reality(y) not in topView
-        for (P3D pointInTV : topView.points) {
-            points3D.add(new P3D(pointInTV.x, 0, pointInTV.y));
+        /*if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+            topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"));
         }
+        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+            bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
+                    getIntent().getFloatArrayExtra("ZPunkte"));
+        }*/
+
         //TODO - points3D: fill in missing y-data (calculate via bottomView)
 		/*
         for (PointF pointInTV : topView.points) {
@@ -203,6 +206,8 @@ public class ThirdActivity extends AppCompatActivity {
                         connectInProgress = false;
                         //if both extreme pts connected cross-View, disable (connect!)-button!
                         connectButton.setEnabled(false);
+                        connectButton.setClickable(false);
+                        connectButton.setAlpha(.5f);
                     }else{
                         //error: select 1 pkt each!
                         Toast.makeText(ThirdActivity.this, "Je 1 Punkt muss markiert sein!", Toast.LENGTH_LONG).show();
@@ -210,6 +215,8 @@ public class ThirdActivity extends AppCompatActivity {
                 }
             }
         });
+
+
 
         //onCreate: markiere topView(NICHTS), bottomView(NICHTS)
         //onButtonConnectPressed:
@@ -259,6 +266,68 @@ public class ThirdActivity extends AppCompatActivity {
         return true;
     }
     */
+
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth){
+        // Raw width of image
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+        if (width > reqWidth) {
+            final int halfWidth = width / 2;
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps width larger than the requested width.
+            while((halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
+    }
+
+    public static Bitmap decodeScaledBitmap(String imageFileAbsPath){
+        //while inJustDecodeBounds = true, bitmap remains empty but dimensions and mimeType are readable
+        //therefore: get raw dimensions with iJDB true, recalc, set with iJDB false.
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(imageFileAbsPath, options);
+        //calculate scaling
+        int maxWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        options.inSampleSize = calculateInSampleSize(options, maxWidth);
+        //decode with correct scaling
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeFile(imageFileAbsPath, options);
+    }
+
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus){
+        super.onWindowFocusChanged(hasFocus);
+
+        float neueHoehe = bottomView.getHeight();
+        float alteBreite = bottomView.getWidth();
+
+        float origHoehe = (float) getIntent().getIntExtra("OrigAbmessY",1);
+        float origBreite = (float) getIntent().getIntExtra("OrigAbmessX",1);
+
+        float scalefactor;
+        float verschiebeFactorX;
+        float verschiebeFactorY;
+
+        float bitmapbreite = bottomView.getDrawable().getIntrinsicWidth();
+        float bitmaphoehe = bottomView.getDrawable().getIntrinsicHeight();
+        float verhaeltnis = bitmaphoehe/bitmapbreite;
+
+        float neuebreite = neueHoehe/verhaeltnis;
+
+        scalefactor = neuebreite/origBreite;
+        verschiebeFactorX = (alteBreite-neuebreite)/2;
+        verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
+
+        if(getIntent().getFloatArrayExtra("XPunkte")!=null){
+            bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
+                    getIntent().getFloatArrayExtra("ZPunkte"), scalefactor, verschiebeFactorX, verschiebeFactorY);
+        }
+        if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
+            topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"),scalefactor,verschiebeFactorX,verschiebeFactorY);
+        }
+    }
 
     @Override
     public void onBackPressed() {
@@ -357,6 +426,105 @@ public class ThirdActivity extends AppCompatActivity {
         currentTVPoint.setYValue(currentFVPoint.y);
     }
     */
+
+    //case 0: TV only contains 1 ring (no spike.)
+    //ergo
+    public void RMR(){
+        //@init: clear ring data
+        //==================================================
+        //FIRST:
+        // create RING
+        //first populate point list
+        topView.populatePointList();
+        //then create ring via dedicated method
+        originalRing.clear();
+        originalRing = MODEL.getRing(topView.points);
+        //originalRing now contains the correctly rotated Ring taken from topView
+        //MODEL.getRing(topView.points);
+        //==================================================
+        //SECOND:
+        vector LR = new vector(extremPtLinks, extremPtRechts);
+        float halfDistLR = (float)LR.length()/2;
+        float k = 0;
+        //for each p left of bisector (dist>0)
+        for (P3D p : bottomView.points) {
+            if(calcDistP3DBisector(p) > 0){ //p is LEFT of bisector
+                //for this point, create new ring, scale it, and move it to have newRing(0) coincide with the point p
+                //newRing = clone of originalRing
+                ArrayList<P3D> newRing = new ArrayList<P3D>();
+                newRing.clear();
+                for(P3D point : originalRing){
+                    newRing.add(new P3D(point));
+                }
+                //calculate skalar k
+                k = calcDistP3DBisector(p)/halfDistLR;
+                //scale newRing
+                scaleRing(newRing, k);
+                //adjustPos newRing
+                adjustRingPos(newRing, p);
+                //add points of newRing to MODEL
+                MODEL.addPointListToMesh(newRing);
+            }
+        }
+    }
+
+    public float calcDistP3DBisector(P3D p){    //extremPtLinks, extremPtRechts bekannt
+        //get mid(extremPtLinks, extremPtRechts) (SIDEVIEW ONLY!)
+        P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, (extremPtLinks.z+extremPtRechts.z)/2);
+        vector Lm = new vector(extremPtLinks, m);
+        vector Lp = new vector(extremPtLinks, p);
+        vector pLm = new vector(-Lm.y, Lm.x, 0); //vector @rightAngle(Lm)
+        double phi = pLm.angle(Lp);    //TODO - formula for angle between 2 vectors - done.
+        //TODO - implement vector.length() - done.
+        double dist = Lm.length() - (Lp.length() * Math.sin(phi));
+        return (float)dist;
+    }
+
+    public void scaleRing(ArrayList<P3D> ring, float skalar){ //p (TV) in ring has x,y, BUT is (x,z) IRL
+        ArrayList<P3D> newRing = new ArrayList<>();
+        newRing.clear();
+        for(P3D ringPoint : ring){
+            newRing.add(new P3D(ringPoint));
+        }
+        //get c
+        float cX = 0;
+        float cY = 0;
+        float cZ = 0;
+        int nbPts = newRing.size();
+        for(P3D p : newRing){
+            cX += p.x;
+            cY += p.y;
+            cZ += p.z;
+        }
+        cX = cX/nbPts;
+        cY = cY/nbPts;
+        cZ = cZ/nbPts;
+        P3D c = new P3D(cX, cY, cZ);
+        //scale around c
+        //use vector v
+        vector v = new vector(0, 0, 0);
+        for(P3D p : newRing){
+            v.setVector(c, p);  //c->p
+            v.scaleVector(skalar);
+            p.x = c.x + v.x;
+            p.y = c.y + v.y;
+            p.z = c.z + v.z;
+        }
+    }
+
+    //überladen für Nutzung mit vector und P3D
+    public void adjustRingPos(ArrayList<P3D> scaledRing, P3D p){
+        //moves (freshly rescaled) Ring for coincidence [pt0Original|pt0Rescaled]
+        vector v = new vector(scaledRing.get(0), p);
+        for(P3D pointInRing : scaledRing){
+            pointInRing.aV(v);
+        }
+    }
+    public void adjustRingPos(ArrayList<P3D> scaledRing, vector v){
+        for(P3D pointInRing : scaledRing){
+            pointInRing.aV(v);
+        }
+    }
 
 }
 

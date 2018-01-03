@@ -233,6 +233,25 @@ public class ShapeCanvas extends ImageView {
         //try: 50?
     }
 
+    public void addTri2(P3D point1, P3D point2, P3D point3){ // wird in rebuildFormerTriangle aufgerufen
+
+        Tri3D newTriangle = new Tri3D(point1, point2, point3, newTriangleId++);
+
+        if(this.firstTriangle==null){
+            this.firstTriangle = newTriangle;
+            this.lastTriangle = this.firstTriangle;
+            this.anzahl = 1;
+        }else {
+            this.lastTriangle.setNextTriangle(newTriangle);
+            this.lastTriangle = newTriangle;
+            //this.lastTriangle = this.lastTriangle.getNextTriangle();
+            this.anzahl++;
+        }
+        //TODO - adjust connectTri(tri) for 1080x1920-screen resolution (10px too small) - Wurstfingersyndrom
+        connectTri2(newTriangle);
+        //try: 50?
+    }
+
     public void capturePoints(float x, float y){
         if(this.pointsNb==0){
             this.p1.set(x,y);
@@ -372,6 +391,25 @@ public class ShapeCanvas extends ImageView {
             }
         }
     }
+
+    public void connectTri2(Tri3D tri){ // ThirdActivity
+        if(canvasTypeTri){
+            if(tri==null){
+                return;
+            }
+            if(this.anzahl==1){
+                return;
+            }
+            Tri3D currentTriangle = this.firstTriangle;
+            while(currentTriangle!=null){
+                if(currentTriangle.getId()!=tri.getId()){   //connect tri and currentTriangle unless .equals()
+                    tri.connect2(currentTriangle);
+                }
+                currentTriangle = currentTriangle.getNextTriangle();
+            }
+        }
+    }
+
 
     //done - both.
     @Override
@@ -574,7 +612,7 @@ public class ShapeCanvas extends ImageView {
             P3D p0 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i++]);
             P3D p1 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i++]);
             P3D p2 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i]);
-            this.addTri(p0, p1, p2);
+            this.addTri2(p0, p1, p2);
         }
         invalidate();
     }
@@ -584,7 +622,7 @@ public class ShapeCanvas extends ImageView {
             P3D p0 = new P3D(formerTriangles[i++]*scale+verschX, (formerTriangles[i++]-verschY)*scale,formerTriangles[i++]);
             P3D p1 = new P3D(formerTriangles[i++]*scale+verschX, (formerTriangles[i++]-verschY)*scale,formerTriangles[i++]);
             P3D p2 = new P3D(formerTriangles[i++]*scale+verschX, (formerTriangles[i++]-verschY)*scale,formerTriangles[i]);
-            this.addTri(p0, p1, p2);
+            this.addTri2(p0, p1, p2);
         }
         invalidate();
     }

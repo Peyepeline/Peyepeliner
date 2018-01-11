@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-->
+        toolbar for FirstActivity and SecondActivity
+    </!-->
+    <!-- button 1 NEXT ACTIVITY-->
+    <item
+    android:id="@+id/action_nextActivityFA"
+    android:icon="@android:drawable/btn_plus"
+    android:title="@string/menuName"
+    app:showAsAction="always"
+    android:visible="false"
+    />
+    <item
+        android:id="@+id/action_rotateX"
+        android:icon="@android:drawable/arrow_up_float"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+    <item
+        android:id="@+id/action_rotateY"
+        android:icon="@android:drawable/ic_media_next"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+    <item
+        android:id="@+id/action_rotateZ"
+        android:icon="@android:drawable/btn_star_big_off"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+    <item
+        android:id="@+id/action_XZ"
+        android:icon="@android:drawable/btn_radio"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+
+	<!-- buttons for 2ndAct -->
+	<item
+        android:id="@+id/action_nextActivitySA"
+        android:icon="@android:drawable/btn_plus"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_takePicSA"
+        android:title="@string/takePic"
+        android:icon="@android:drawable/ic_menu_camera"
+        app:showAsAction="always"/>
+
+    <item android:id="@+id/action_rotatePicSA"
+        android:title="@string/rotatePic"
+        android:icon="@android:drawable/ic_menu_rotate"
+        app:showAsAction="always"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_newPointSA"
+        android:title="@string/newPoint"
+        android:icon="@android:drawable/btn_plus"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_selectSA"
+        android:title="@string/select"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_delPointSA"
+        android:title="@string/delPoint"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_delEvSA"
+        android:title="@string/delEv"
+        app:showAsAction="never"
+        android:visible="false"/>
+		
+    <!-- button 2 TAKEPIC-->
+    <item android:id="@+id/action_takePicFA"
+        android:title="@string/takePic"
+        android:icon="@android:drawable/ic_menu_camera"
+        app:showAsAction="always"/>
+    <!-- button 3 ROTATEPIC-->
+    <item android:id="@+id/action_rotatePicFA"
+        android:title="@string/rotatePic"
+        android:icon="@android:drawable/ic_menu_rotate"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <!-- button 4 MKTRI-->
+    <item android:id="@+id/action_newTriFA"
+        android:title="@string/makeTri"
+        android:icon="@android:drawable/btn_plus"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <!-- button 5 MOVEPT-->
+    <item android:id="@+id/action_movePtFA"
+        android:title="@string/movePoint"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <!-- button 6 SELECTPT-->
+    <item android:id="@+id/action_selectPtFA"
+        android:title="@string/selectPt"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <!-- button 7 SELECTTRI-->
+    <item android:id="@+id/action_selectTriFA"
+        android:title="@string/selectTri"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <!-- button 8 DELTRI-->
+    <item android:id="@+id/action_delTriFA"
+        android:title="@string/delTri"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+</menu>

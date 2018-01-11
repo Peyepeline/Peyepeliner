@@ -31,6 +31,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
     public int anzahlPunkteInRing; //Anzahl der Eckpunkte jedes Ringes
     public int anzahlRinge; //Anzahl der Ringe
     public ArrayList<P3D> polygonringe = new ArrayList<P3D>(); //nur aeussere Punkte
+    boolean xy = true;
 
 
     //private ImageView figure;  //now in customized ShapeCanvas-class
@@ -67,7 +68,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         anzahlRinge= getIntent().getIntExtra("anzahlRinge",0);
 
         //figure.fourthActivity = true;
-        rebuildPoints(getIntent().getFloatArrayExtra("x"), getIntent().getFloatArrayExtra("y"), getIntent().getFloatArrayExtra("z"));
+        rebuildPointsVersch(getIntent().getFloatArrayExtra("x"), getIntent().getFloatArrayExtra("y"), getIntent().getFloatArrayExtra("z"));
         rebuildTriangles(getIntent().getIntArrayExtra("p0"),getIntent().getIntArrayExtra("p1"),getIntent().getIntArrayExtra("p2"));
         rebuildRing(getIntent().getIntArrayExtra("kompletterRing"));
 
@@ -83,6 +84,12 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         }
     }
 
+    public void rebuildPointsVersch(float[] x, float[] y, float[] z){
+        for(int i=0;i<x.length;i++){
+            figure.model.addPointToMesh(new P3D(x[i],y[i]+200,z[i]));
+        }
+    }
+
     public void rebuildTriangles(int[] p0, int[] p1, int[] p2){
         for(int i=0;i<p0.length;i++){
             figure.model.addTriangleToMesh(new Tri3D(figure.model.points.get(p0[i]),figure.model.points.get(p1[i]),figure.model.points.get(p2[i])));
@@ -92,6 +99,19 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
     public void rebuildRing(int[] ring){
         for(int i=0;i<ring.length;i++){
             polygonringe.add(figure.model.points.get(ring[i]));
+        }
+    }
+
+    public void setExtreme(){
+        this.figure.extremL = this.polygonringe.get(0);
+        this.figure.extremR = this.polygonringe.get(0);
+        for(int i=1;i<anzahlPunkteInRing;i++){
+            if(this.polygonringe.get(i).x<this.figure.extremL.x){
+                this.figure.extremL=this.polygonringe.get(i);
+            }
+            if(this.polygonringe.get(i).x>this.figure.extremR.x){
+                this.figure.extremR=this.polygonringe.get(i);
+            }
         }
     }
 
@@ -179,7 +199,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu1) {
-        getMenuInflater().inflate(R.menu.menu_toolbarcombined, menu1);
+        getMenuInflater().inflate(R.menu.menu_toolbar4, menu1);
         //MenuItem item = menu.findItem(R.id.action_rotatePic);//which menuItem?
         MenuItem item = menu1.findItem(R.id.action_takePicFA);
         item.setVisible(false);
@@ -198,6 +218,12 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         item = menu1.findItem(R.id.action_delTriFA);
         item.setVisible(true);
         item = menu1.findItem(R.id.action_nextActivityFA);
+        item.setVisible(false);
+        item = menu1.findItem(R.id.action_rotateX);
+        item.setVisible(true);
+        item = menu1.findItem(R.id.action_rotateY);
+        item.setVisible(true);
+        item = menu1.findItem(R.id.action_rotateZ);
         item.setVisible(true);
         //item.setVisible(picTaken && figure.canvasTypeTri);
 		//SideView
@@ -219,6 +245,8 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         item.setVisible(false);
         item = menu1.findItem(R.id.action_nextActivitySA);
         item.setVisible(false);
+        item = menu1.findItem(R.id.action_XZ);
+        item.setVisible(true);
         //item.setVisible((picTaken && figure.canvasTypeTri) ^ picTaken);
         return true;
     }
@@ -337,10 +365,40 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
                 Toast.makeText(FourthActivity.this, "Ausgewähltes Dreieck löschen", Toast.LENGTH_SHORT).show();
                 return true;
 
-            case R.id.action_nextActivityFA:
+            case R.id.action_rotateX:
                 try {
-                    this.figure.rotateXAxis();
+                    this.figure.rotateXAxis(Resources.getSystem().getDisplayMetrics().heightPixels);
                     figure.invalidate();
+                }catch (NullPointerException e){
+                    Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+                }catch (IndexOutOfBoundsException e){
+                    Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            case R.id.action_rotateY:
+                try {
+                    this.figure.rotateYAxis();
+                    figure.invalidate();
+                }catch (NullPointerException e){
+                    Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+                }catch (IndexOutOfBoundsException e){
+                    Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            case R.id.action_rotateZ:
+                try {
+                    this.figure.rotateZAxis();
+                    figure.invalidate();
+                }catch (NullPointerException e){
+                    Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+                }catch (IndexOutOfBoundsException e){
+                    Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            case R.id.action_XZ:
+                try {
+                    xy=!xy;
+                    figure.changePointsToDraw(xy);
                 }catch (NullPointerException e){
                     Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
                 }catch (IndexOutOfBoundsException e){

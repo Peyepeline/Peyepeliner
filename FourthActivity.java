@@ -377,7 +377,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
                 return true;
             case R.id.action_rotateY:
                 try {
-                    this.figure.rotateYAxis();
+                    this.figure.rotateYAxis(Resources.getSystem().getDisplayMetrics().widthPixels);
                     figure.invalidate();
                 }catch (NullPointerException e){
                     Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();

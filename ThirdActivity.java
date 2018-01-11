@@ -504,7 +504,7 @@ public class ThirdActivity extends AppCompatActivity {
                 k = Math.abs(calcDistP3DBisector(p))/halfDistLR;
 
                 //scale newRing
-                newRing=scaleRing(newRing, k);
+                scaleRing(newRing, k);
 
                 //adjustPos newRing
                 newRing=adjustRingPos(newRing, p);
@@ -605,18 +605,13 @@ public class ThirdActivity extends AppCompatActivity {
     }
 
 
-    public ArrayList<P3D> scaleRing(ArrayList<P3D> ring, float skalar){ //p (TV) in ring has x,y, BUT is (x,z) IRL
-        ArrayList<P3D> newRing = new ArrayList<>();
-        newRing.clear();
-        for(P3D ringPoint : ring){
-            newRing.add(new P3D(ringPoint));
-        }
+    public void scaleRing(ArrayList<P3D> ring, float skalar){ //p (TV) in ring has x,y, BUT is (x,z) IRL
         //get c
         float cX = 0;
         float cY = 0;
         float cZ = 0;
-        int nbPts = newRing.size();
-        for(P3D p : newRing){
+        int nbPts = ring.size();
+        for(P3D p : ring){
             cX += p.x;
             cY += p.y;
             cZ += p.z;
@@ -628,14 +623,13 @@ public class ThirdActivity extends AppCompatActivity {
         //scale around c
         //use vector v
         vector v = new vector(0, 0, 0);
-        for(P3D p : newRing){
+        for(P3D p : ring){
             v.setVector(c, p);  //c->p
             v.scaleVector(skalar);
             p.x = c.x + v.x;
             p.y = c.y + v.y;
             p.z = c.z + v.z;
         }
-        return newRing;
     }
 
     //überladen für Nutzung mit vector und P3D

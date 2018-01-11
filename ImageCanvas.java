@@ -99,9 +99,16 @@ public class ImageCanvas extends ImageView {
 
     public void rotateXAxis(int hoehe){
         float yStrich, zStrich;
+        float verschY = getMiddleY();
+        float verschZ = getMiddleZ();
         for(P3D currentPt : model.points){
-            currentPt.y=currentPt.y-(1/2*hoehe);
+            currentPt.y=currentPt.y-verschY;
+            currentPt.z=currentPt.z-verschZ;
+            //currentPt.x=currentPt.x-(1/2*breite);
         }
+        /*for(P3D currentPt : model.points){
+            currentPt.y=currentPt.y-(1/2*hoehe);
+        }*/
         for(int i=0;i<model.points.size();i++){
             yStrich = (float)(Math.cos(Math.toRadians(30))*model.points.get(i).y-(Math.sin(Math.toRadians(30))*model.points.get(i).z));
             zStrich = (float)(Math.sin(Math.toRadians(30))*model.points.get(i).y+(Math.cos(Math.toRadians(30))*model.points.get(i).z));
@@ -109,21 +116,38 @@ public class ImageCanvas extends ImageView {
             model.points.get(i).z=zStrich;
         }
         for(P3D currentPt : model.points){
-            currentPt.y=currentPt.y+(1/2*hoehe);
+            currentPt.y=currentPt.y+verschY;
+            currentPt.z=currentPt.z+verschZ;
+            //currentPt.x=currentPt.x-(1/2*breite);
         }
+        /*for(P3D currentPt : model.points){
+            currentPt.y=currentPt.y+(1/2*hoehe);
+        }*/
         for(int i=0;i<model.points.size();i++){
             pointsToDraw.get(i).y=model.points.get(i).y;
         }
         this.invalidate();
     }
 
-    public void rotateYAxis(){
+    public void rotateYAxis(int breite){
         float xStrich,zStrich;
+        float verschX = getMiddleX();
+        float verschZ = getMiddleZ();
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x-verschX;
+            currentPt.z=currentPt.z-verschZ;
+            //currentPt.x=currentPt.x-(1/2*breite);
+        }
         for(int i=0;i<model.points.size();i++){
             xStrich = (float)(Math.cos(Math.toRadians(30))*model.points.get(i).x+(Math.sin(Math.toRadians(30))*model.points.get(i).z));
             zStrich = (float)(-Math.sin(Math.toRadians(30))*model.points.get(i).x+(Math.cos(Math.toRadians(30))*model.points.get(i).z));
             model.points.get(i).x=xStrich;
             model.points.get(i).z=zStrich;
+        }
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x+verschX;
+            currentPt.z=currentPt.z+verschZ;
+            //currentPt.x=currentPt.x+(1/2*breite);
         }
         for(int i=0;i<model.points.size();i++){
             pointsToDraw.get(i).x=model.points.get(i).x;
@@ -133,17 +157,53 @@ public class ImageCanvas extends ImageView {
 
     public void rotateZAxis(){
         float xStrich,yStrich;
+        float verschX = getMiddleX();
+        float verschY = getMiddleY();
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x-verschX;
+            currentPt.y=currentPt.y-verschY;
+            //currentPt.x=currentPt.x-(1/2*breite);
+        }
         for(int i=0;i<model.points.size();i++){
             xStrich=(float)(Math.cos(Math.toRadians(30))*model.points.get(i).x-(Math.sin(Math.toRadians(30))*model.points.get(i).y));
             yStrich=(float)(Math.sin(Math.toRadians(30))*model.points.get(i).x+(Math.cos(Math.toRadians(30))*model.points.get(i).y));
             model.points.get(i).x=xStrich;
             model.points.get(i).y=yStrich;
         }
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x+verschX;
+            currentPt.y=currentPt.y+verschY;
+            //currentPt.x=currentPt.x-(1/2*breite);
+        }
         for(int i=0;i<model.points.size();i++){
             pointsToDraw.get(i).x=model.points.get(i).x;
             pointsToDraw.get(i).y=model.points.get(i).y;
         }
         this.invalidate();
+    }
+
+    public float getMiddleY(){
+        float middle=0;
+        for(int i=0;i<model.points.size();i++){
+            middle = middle+model.points.get(i).y;
+        }
+        return (middle/model.points.size());
+    }
+
+    public float getMiddleX(){
+        float middle=0;
+        for(int i=0;i<model.points.size();i++){
+            middle = middle+model.points.get(i).x;
+        }
+        return (middle/model.points.size());
+    }
+
+    public float getMiddleZ(){
+        float middle=0;
+        for(int i=0;i<model.points.size();i++){
+            middle = middle+model.points.get(i).z;
+        }
+        return (middle/model.points.size());
     }
 
     public void changePointsToDraw(boolean xy){
@@ -238,7 +298,7 @@ public class ImageCanvas extends ImageView {
         ArrayList<P3D> closestPoints = new ArrayList<P3D>();
         //this.populatePointList();
         //P3D currPt = this.model.points.get(0);
-        double abstand = 50;
+        double abstand = 20;
         //double currAbstand = abstand(pos, currPt.getPointF());
         for (P3D pointInArrayList : this.model.points) {
             if (abstand(pos, pointInArrayList.getPointF()) < abstand) {

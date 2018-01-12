@@ -481,7 +481,12 @@ public class ThirdActivity extends AppCompatActivity {
         MODEL.addPointListToMesh(originalRing);
         //==================================================
         //SECOND:
-        vector LR = new vector(extremPtLinks, extremPtRechts);
+	//=======================edited===========================
+	//USE BOTTOMVIEW-PROJECTIONS FOR CALCULATIONS!
+	P3D bottomViewLinks = new P3D(extremPktLinks.x, extremPktLinks.y);
+	P3D bottomViewRechts = new P3D(extremPktRechts.x, extremPktRechts.y);
+        vector LR = new vector(bottomViewLinks, bottomViewRechts);
+        //=======================edited===========================
         vector LToPoint = new vector(0);
         vector RToPoint = new vector(0);
         float halfDistLR = (float)LR.length()/2;
@@ -489,8 +494,10 @@ public class ThirdActivity extends AppCompatActivity {
         //for each p left of bisector (dist<0)
         for (P3D p : bottomView.points) {
             //if(calcDistP3DBisector(p) < 0){ //p is LEFT of bisector
-            LToPoint.setVector(extremPtLinks, p);
-            RToPoint.setVector(extremPtRechts, p);
+	    //=======================edited===========================
+            LToPoint.setVector(bottomViewLinks, p);
+            RToPoint.setVector(bottomViewRechts, p);
+	    //=======================edited===========================
             if(LToPoint.length() < RToPoint.length()&&(!p.compare(extremPtLinks))&&(!p.compare(extremPtRechts))){
                 //QUATSCH: use dreiecksungleichung!
                 //for this point, create new ring, scale it, and move it to have newRing(0) coincide with the point p
@@ -594,7 +601,9 @@ public class ThirdActivity extends AppCompatActivity {
 
     public float calcDistP3DBisector(P3D p){    //extremPtLinks, extremPtRechts bekannt
         //get mid(extremPtLinks, extremPtRechts) (SIDEVIEW ONLY!)
-        P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, (extremPtLinks.z+extremPtRechts.z)/2);
+	//=======================edited===========================
+        P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, 0);
+	//=======================edited===========================
         vector Lm = new vector(extremPtLinks, m);
         vector Lp = new vector(extremPtLinks, p);
         vector pLm = new vector(-Lm.y, Lm.x, 0); //vector @rightAngle(Lm)

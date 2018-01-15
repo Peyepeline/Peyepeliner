@@ -56,6 +56,8 @@ public class ThirdActivity extends AppCompatActivity {
 
     private String pictureImagePath = "";
 
+    public ArrayList<Tri3D> triangles = new ArrayList<Tri3D>();
+
     //import frontPic and topPic from ImportAndEnterActivity - point to actual objects
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -476,15 +478,24 @@ public class ThirdActivity extends AppCompatActivity {
         //MODEL.getRing(topView.points);
         //0->extremLinks
         //move origRing to extremPktLinks.y and add to MODEL.points
+        //---
+        triangles();
+        P3D extremLinksCopy = new P3D(extremPtLinks.x,extremPtLinks.y,extremPtLinks.z);
+        //---
         vector originalVector = new vector(0,extremPtLinks.y,0);
-        adjustRingPos(originalRing,originalVector);
+        adjustRingPos(originalRing,originalVector); //geaendert
         MODEL.addPointListToMesh(originalRing);
+        //---
+        for(int i=0;i<triangles.size();i++){
+            MODEL.addTriangleToMesh(triangles.get(i));
+        }
+        //---
         //==================================================
         //SECOND:
-	//=======================edited===========================
-	//USE BOTTOMVIEW-PROJECTIONS FOR CALCULATIONS!
-	P3D bottomViewLinks = new P3D(extremPktLinks.x, extremPktLinks.y);
-	P3D bottomViewRechts = new P3D(extremPktRechts.x, extremPktRechts.y);
+        //=======================edited===========================
+        //USE BOTTOMVIEW-PROJECTIONS FOR CALCULATIONS!
+        P3D bottomViewLinks = new P3D(extremPtLinks.x, extremPtLinks.y);
+        P3D bottomViewRechts = new P3D(extremPtRechts.x, extremPtRechts.y);
         vector LR = new vector(bottomViewLinks, bottomViewRechts);
         //=======================edited===========================
         vector LToPoint = new vector(0);
@@ -494,10 +505,122 @@ public class ThirdActivity extends AppCompatActivity {
         //for each p left of bisector (dist<0)
         for (P3D p : bottomView.points) {
             //if(calcDistP3DBisector(p) < 0){ //p is LEFT of bisector
-	    //=======================edited===========================
+            //=======================edited===========================
             LToPoint.setVector(bottomViewLinks, p);
             RToPoint.setVector(bottomViewRechts, p);
-	    //=======================edited===========================
+            //=======================edited===========================
+            if(LToPoint.length() < RToPoint.length()&&(!(p.x==extremLinksCopy.x&&p.y==extremLinksCopy.y))/*&&(!p.compare(extremPtRechts))*/){
+                //QUATSCH: use dreiecksungleichung!
+                //for this point, create new ring, scale it, and move it to have newRing(0) coincide with the point p
+                //newRing = clone of originalRing
+                ArrayList<P3D> newRing = new ArrayList<P3D>();
+                newRing.clear();
+                for(P3D point : originalRing){
+                    newRing.add(new P3D(point));
+                }
+                //calculate skalar k
+                //k = Math.abs(calcDistP3DBisector(p))/halfDistLR;
+                k=getK(p);
+                //scale newRing
+                scaleRing(newRing, k);
+
+                //adjustPos newRing
+                newRing=adjustRingPos(newRing, p);
+                //add points of newRing to MODEL
+                MODEL.addPointListToMesh(newRing);
+            }
+        }
+        //==================================================
+        //THIRD:
+        //add spikes
+        //TODO - implement
+        nextActivity();
+    }
+
+    /*public float getK(P3D p){ // gibt immer k gleich oder fast gleich 1 zureuck
+        P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, 0);
+        P3D TwoDExtremLinks = new P3D(extremPtLinks.x, extremPtLinks.y, 0);
+        vector LinksM = new vector(m, TwoDExtremLinks);
+        double laengeLinksM = LinksM.length();
+        P3D TwoDP = new P3D(p.x,p.y,0);
+        vector ExLinksp = new vector(TwoDExtremLinks, TwoDP);
+        P3D mStrich = new P3D(m.x+ExLinksp.x, m.y+ExLinksp.y,0);
+        vector pMStrich = new vector(TwoDP, mStrich);
+        double laengepMStrich = pMStrich.length();
+        float k = (float) (laengepMStrich/laengeLinksM);
+        return k;
+    }*/
+
+    public float getK(P3D p){
+        float m = (extremPtLinks.x+extremPtRechts.x)/2;
+        float XabstandP = Math.abs(p.x-m);
+        float XAbstandExtr = Math.abs(extremPtLinks.x-m);
+        float k = XabstandP/XAbstandExtr;
+        return k;
+    }
+
+    public void triangles(){
+        try {
+            Tri3D currentTri = topView.getFirstTriangle();
+            int index0=0;
+            int index1=0;
+            int index2=0;
+            while (currentTri != null) {
+                P3D p0 = new P3D(currentTri.getp0().x, 0, currentTri.getp0().y);
+                P3D p1 = new P3D(currentTri.getp1().x, 0, currentTri.getp1().y);
+                P3D p2 = new P3D(currentTri.getp2().x, 0, currentTri.getp2().y);
+                for(int i=0;i<originalRing.size();i++){
+                    if(originalRing.get(i).compare(p0)){
+                        index0 = i;
+                    }
+                    if(originalRing.get(i).compare(p1)){
+                        index1 = i;
+                    }
+                    if(originalRing.get(i).compare(p2)){
+                       index2 = i;
+                    }
+                }
+                triangles.add(new Tri3D(originalRing.get(index0), originalRing.get(index1), originalRing.get(index2)));
+                currentTri =currentTri.getNextTriangle();
+            }
+        }catch (NullPointerException e){
+            Toast.makeText(ThirdActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+        }catch (IndexOutOfBoundsException e){
+            Toast.makeText(ThirdActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    //case 0: TV only contains 1 ring (no spike.)
+    //ergo
+    /*public void RMR(){//called to create rings based on topView, bottomView, extremPktLinks, extremPktRechts
+        //@init: clear ring data
+        //==================================================
+        //FIRST:
+        // create RING
+        //first populate point list
+        topView.populatePointList();
+        //then create ring via dedicated method
+        originalRing.clear();
+        originalRing = MODEL.getRing(topView.points);
+        //originalRing now contains the correctly rotated Ring taken from topView
+        //MODEL.getRing(topView.points);
+        //0->extremLinks
+        //move origRing to extremPktLinks.y and add to MODEL.points
+        vector originalVector = new vector(0,extremPtLinks.y,0);
+        adjustRingPos(originalRing,originalVector);
+        MODEL.addPointListToMesh(originalRing);
+        //==================================================
+        //SECOND:
+        vector LR = new vector(extremPtLinks, extremPtRechts);
+        vector LToPoint = new vector(0);
+        vector RToPoint = new vector(0);
+        float halfDistLR = (float)LR.length()/2;
+        float k = 0;
+        //for each p left of bisector (dist<0)
+        for (P3D p : bottomView.points) {
+            //if(calcDistP3DBisector(p) < 0){ //p is LEFT of bisector
+            LToPoint.setVector(extremPtLinks, p);
+            RToPoint.setVector(extremPtRechts, p);
             if(LToPoint.length() < RToPoint.length()&&(!p.compare(extremPtLinks))&&(!p.compare(extremPtRechts))){
                 //QUATSCH: use dreiecksungleichung!
                 //for this point, create new ring, scale it, and move it to have newRing(0) coincide with the point p
@@ -524,7 +647,7 @@ public class ThirdActivity extends AppCompatActivity {
         //add spikes
         //TODO - implement
         nextActivity();
-    }
+    }*/
 
     public boolean test(P3D p){
         boolean isLinks = (extremPtLinks.x==p.x)&&(extremPtLinks.y==p.y);
@@ -599,11 +722,23 @@ public class ThirdActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /*public float calcDistP3DBisector(P3D p){    //extremPtLinks, extremPtRechts bekannt
+        //get mid(extremPtLinks, extremPtRechts) (SIDEVIEW ONLY!)
+        P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, (extremPtLinks.z+extremPtRechts.z)/2);
+        vector Lm = new vector(extremPtLinks, m);
+        vector Lp = new vector(extremPtLinks, p);
+        vector pLm = new vector(-Lm.y, Lm.x, 0); //vector @rightAngle(Lm)
+        double phi = pLm.angle(Lp);    //TODO - formula for angle between 2 vectors - done.
+        //TODO - implement vector.length() - done.
+        double dist = (Lp.length() * Math.sin(phi)) - Lm.length();  //umgedreht
+        return (float)dist;
+    }*/
+
     public float calcDistP3DBisector(P3D p){    //extremPtLinks, extremPtRechts bekannt
         //get mid(extremPtLinks, extremPtRechts) (SIDEVIEW ONLY!)
-	//=======================edited===========================
+        //=======================edited===========================
         P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, 0);
-	//=======================edited===========================
+        //=======================edited===========================
         vector Lm = new vector(extremPtLinks, m);
         vector Lp = new vector(extremPtLinks, p);
         vector pLm = new vector(-Lm.y, Lm.x, 0); //vector @rightAngle(Lm)

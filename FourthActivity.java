@@ -31,7 +31,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
     public int anzahlPunkteInRing; //Anzahl der Eckpunkte jedes Ringes
     public int anzahlRinge; //Anzahl der Ringe
     public ArrayList<P3D> polygonringe = new ArrayList<P3D>(); //nur aeussere Punkte
-    boolean xy = true;
+    //boolean xy = true;
 
 
     //private ImageView figure;  //now in customized ShapeCanvas-class
@@ -86,7 +86,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
 
     public void rebuildPointsVersch(float[] x, float[] y, float[] z){
         for(int i=0;i<x.length;i++){
-            figure.model.addPointToMesh(new P3D(x[i],y[i]+200,z[i]));
+            figure.model.addPointToMesh(new P3D(x[i],y[i],z[i]));
         }
     }
 
@@ -367,7 +367,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
 
             case R.id.action_rotateX:
                 try {
-                    this.figure.rotateXAxis(Resources.getSystem().getDisplayMetrics().heightPixels);
+                    this.figure.rotateXAxis();
                     figure.invalidate();
                 }catch (NullPointerException e){
                     Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
@@ -377,7 +377,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
                 return true;
             case R.id.action_rotateY:
                 try {
-                    this.figure.rotateYAxis(Resources.getSystem().getDisplayMetrics().widthPixels);
+                    this.figure.rotateYAxis();
                     figure.invalidate();
                 }catch (NullPointerException e){
                     Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
@@ -397,8 +397,8 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
                 return true;
             case R.id.action_XZ:
                 try {
-                    xy=!xy;
-                    figure.changePointsToDraw(xy);
+                    this.figure.xy=!this.figure.xy;
+                    figure.changePointsToDraw();
                 }catch (NullPointerException e){
                     Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
                 }catch (IndexOutOfBoundsException e){

@@ -28,6 +28,7 @@ public class ImageCanvas extends ImageView {
     //boolean for type: TriCanvas = true, PoiCanvas = false
     //public Boolean canvasTypeTri = true;
     public ArrayList<PointF> pointsToDraw = new ArrayList<PointF>(); //2D-Koordinaten auf Bildschirm der 3-dimensionalen Punkte
+    public boolean xy = true; //werden x und y Koordinaten gemalt oder x und z Koordinaten
 
     //public boolean fourthActivity = false;
     public int extremZ = 20;
@@ -97,7 +98,7 @@ public class ImageCanvas extends ImageView {
         }
     }
 
-    public void rotateXAxis(int hoehe){
+    public void rotateXAxis(){
         float yStrich, zStrich;
         float verschY = getMiddleY();
         float verschZ = getMiddleZ();
@@ -123,13 +124,14 @@ public class ImageCanvas extends ImageView {
         /*for(P3D currentPt : model.points){
             currentPt.y=currentPt.y+(1/2*hoehe);
         }*/
-        for(int i=0;i<model.points.size();i++){
+        /*for(int i=0;i<model.points.size();i++){
             pointsToDraw.get(i).y=model.points.get(i).y;
-        }
+        }*/
+        changePointsToDraw();
         this.invalidate();
     }
 
-    public void rotateYAxis(int breite){
+    public void rotateYAxis(){
         float xStrich,zStrich;
         float verschX = getMiddleX();
         float verschZ = getMiddleZ();
@@ -149,9 +151,10 @@ public class ImageCanvas extends ImageView {
             currentPt.z=currentPt.z+verschZ;
             //currentPt.x=currentPt.x+(1/2*breite);
         }
-        for(int i=0;i<model.points.size();i++){
+        changePointsToDraw();
+        /*for(int i=0;i<model.points.size();i++){
             pointsToDraw.get(i).x=model.points.get(i).x;
-        }
+        }*/
         this.invalidate();
     }
 
@@ -175,10 +178,11 @@ public class ImageCanvas extends ImageView {
             currentPt.y=currentPt.y+verschY;
             //currentPt.x=currentPt.x-(1/2*breite);
         }
-        for(int i=0;i<model.points.size();i++){
+        changePointsToDraw();
+        /*for(int i=0;i<model.points.size();i++){
             pointsToDraw.get(i).x=model.points.get(i).x;
             pointsToDraw.get(i).y=model.points.get(i).y;
-        }
+        }*/
         this.invalidate();
     }
 
@@ -206,13 +210,15 @@ public class ImageCanvas extends ImageView {
         return (middle/model.points.size());
     }
 
-    public void changePointsToDraw(boolean xy){
+    public void changePointsToDraw(){
         if(xy){
             for (int i = 0; i < model.points.size(); i++) {
+                this.pointsToDraw.get(i).x = this.model.points.get(i).x;
                 this.pointsToDraw.get(i).y = this.model.points.get(i).y;
             }
         }else {
             for (int i = 0; i < model.points.size(); i++) {
+                this.pointsToDraw.get(i).x = this.model.points.get(i).x;
                 this.pointsToDraw.get(i).y = this.model.points.get(i).z;
             }
         }
@@ -298,7 +304,7 @@ public class ImageCanvas extends ImageView {
         ArrayList<P3D> closestPoints = new ArrayList<P3D>();
         //this.populatePointList();
         //P3D currPt = this.model.points.get(0);
-        double abstand = 20;
+        double abstand = 30;
         //double currAbstand = abstand(pos, currPt.getPointF());
         for (P3D pointInArrayList : this.model.points) {
             if (abstand(pos, pointInArrayList.getPointF()) < abstand) {

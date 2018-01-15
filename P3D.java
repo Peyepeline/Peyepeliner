@@ -89,7 +89,7 @@ class P3D {
     }
 
     public boolean compare(P3D p){
-        if(this.x==p.x||this.y==p.y||this.z==p.z){
+        if(this.x==p.x&&this.y==p.y&&this.z==p.z){
             return true;
         }else{
             return false;

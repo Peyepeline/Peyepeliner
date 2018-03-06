@@ -8,6 +8,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Region;
 import android.support.annotation.NonNull;
+import android.support.v4.graphics.ColorUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ImageView;
@@ -17,11 +18,53 @@ import java.util.ArrayList;
 /**
  * Created by Core on 27.09.2017.
  */
+class Dreieck{
+    Path path;
+    float z;
+    Paint paint;
+    int pos;
+    float x,y;
+    public Dreieck(Tri3D tri, Path path, int pos){
+        this.path=path;
+        this.z = tri.getp0().z+tri.getp1().z+tri.getp2().z;
+        this.x = tri.getp0().x;
+        this.y = tri.getp0().y;
+        //this.z = Math.max(tri.getp0().z, Math.max(tri.getp1().z, tri.getp2().z));
+        paint=tri.getColour();
+        this.pos = pos;
+    }
+    /*Dreieck currentDrei;
+            Dreiecke.clear();
+            int position;
+            while (i<model.triangles.size()) {
+                currentTri = model.triangles.get(i);
+                currentDrei = new Dreieck(currentTri, pathify(currentTri), i++);
+                position = Dreiecke.size();
+                for (int j = Dreiecke.size() - 1; j >= 0; j--) {
+                    if (currentDrei.z < Dreiecke.get(j).z) {
+                        break;
+                    } else {
+                        position = j;
+                    }
+                }
+                Dreiecke.add(position, currentDrei);
+                //currentTri = currentTri.getNextTriangle();
+            }
+            isSorted();
+            Dreieck d;
+            for(int h=0;h<Dreiecke.size();h++){
+                d=Dreiecke.get(h);
+                canvas.drawPath(d.path, d.paint);   //draw filled Tri
+                canvas.drawPath(d.path, contourPaint); //draw Tri borders
+                //canvas.drawText(d.pos+"",d.x,d.y,new Paint(Color.CYAN));
+            }*/
+}
 
 public class ImageCanvas extends ImageView {
 
+    //public ArrayList<Dreieck> Dreiecke = new ArrayList<>();
     public Model3D model = new Model3D();
-    public P3D extremL, extremR;
+    public P3D extremL, extremR; // aus vorheriger Activity mit uebertragen -> vllt auch nur Indices??
     //ArrayList mit Punkten
     //enthält zuerst nur 2/3 der koordinaten, wird in 3rdactivity vervollständigt
     //public ArrayList<P3D> points = new ArrayList<P3D>();
@@ -29,6 +72,10 @@ public class ImageCanvas extends ImageView {
     //public Boolean canvasTypeTri = true;
     public ArrayList<PointF> pointsToDraw = new ArrayList<PointF>(); //2D-Koordinaten auf Bildschirm der 3-dimensionalen Punkte
     public boolean xy = true; //werden x und y Koordinaten gemalt oder x und z Koordinaten
+
+    public ArrayList<Tri3D> boden = new ArrayList<Tri3D>();
+    public ArrayList<Tri3D> deckel = new ArrayList<Tri3D>();
+    public ArrayList<Tri3D> seiten = new ArrayList<Tri3D>();
 
     //public boolean fourthActivity = false;
     public int extremZ = 20;
@@ -39,6 +86,8 @@ public class ImageCanvas extends ImageView {
     private Paint contourPaint = new Paint();   //for contours
     private Paint pointMarker = new Paint();
     private Paint selectMarker = new Paint();
+    private Paint[] pointMarkers= new Paint[5];
+    public int anzahlPunkteInRing;
 
     private int operationID = 0;
     //vars for newTriangle
@@ -90,6 +139,27 @@ public class ImageCanvas extends ImageView {
         selectMarker.setStyle(Paint.Style.STROKE);
         selectMarker.setColor(Color.YELLOW);
         selectMarker.setStrokeWidth(10);
+
+        pointMarkers[0] = new Paint();
+        pointMarkers[0].setStyle(Paint.Style.FILL);
+        pointMarkers[0].setColor(Color.MAGENTA);
+        pointMarkers[0].setStrokeWidth(2);
+        pointMarkers[1] = new Paint();
+        pointMarkers[1].setStyle(Paint.Style.FILL);
+        pointMarkers[1].setColor(Color.BLUE);
+        pointMarkers[1].setStrokeWidth(2);
+        pointMarkers[2] = new Paint();
+        pointMarkers[2].setStyle(Paint.Style.FILL);
+        pointMarkers[2].setColor(Color.GREEN);
+        pointMarkers[2].setStrokeWidth(2);
+        pointMarkers[3] = new Paint();
+        pointMarkers[3].setStyle(Paint.Style.FILL);
+        pointMarkers[3].setColor(Color.WHITE);
+        pointMarkers[3].setStrokeWidth(2);
+        pointMarkers[4] = new Paint();
+        pointMarkers[4].setStyle(Paint.Style.FILL);
+        pointMarkers[4].setColor(Color.RED);
+        pointMarkers[4].setStrokeWidth(2);
     }
 
     public void setPointsToDraw(){
@@ -225,6 +295,139 @@ public class ImageCanvas extends ImageView {
         this.invalidate();
     }
 
+    public void up(){
+        for(int i=0;i<this.model.points.size();i++){
+            this.model.points.get(i).y=this.model.points.get(i).y-10;
+        }
+        changePointsToDraw();
+        invalidate();
+    }
+
+    public void down(){
+        for(int i=0;i<this.model.points.size();i++){
+            this.model.points.get(i).y=this.model.points.get(i).y+10;
+        }
+        changePointsToDraw();
+        invalidate();
+    }
+
+    public void upOrDown(float versch){
+        for(int i=0;i<this.model.points.size();i++){
+            this.model.points.get(i).y=this.model.points.get(i).y+versch;
+        }
+        changePointsToDraw();
+        invalidate();
+    }
+
+    public void left(){
+        for(int i=0;i<this.model.points.size();i++){
+            this.model.points.get(i).x=this.model.points.get(i).x-10;
+        }
+        changePointsToDraw();
+        invalidate();
+    }
+
+    public void right(){
+        for(int i=0;i<this.model.points.size();i++){
+            this.model.points.get(i).x=this.model.points.get(i).x+10;
+        }
+        changePointsToDraw();
+        invalidate();
+    }
+
+    public void zoomPlus(){
+        float xStrich,yStrich,zStrich;
+        float verschX = getMiddleX();
+        float verschY = getMiddleY();
+        float verschZ = getMiddleZ();
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x-verschX;
+            currentPt.y=currentPt.y-verschY;
+            currentPt.z=currentPt.z-verschZ;
+        }
+        for(P3D currentPt : model.points){
+            currentPt.x=(float)(currentPt.x*1.1);
+            currentPt.y=(float)(currentPt.y*1.1);
+            currentPt.z=(float)(currentPt.z*1.1);
+        }
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x+verschX;
+            currentPt.y=currentPt.y+verschY;
+            currentPt.z=currentPt.z+verschZ;
+        }
+        changePointsToDraw();
+        invalidate();
+    }
+
+    public void zoomMinus(){
+        float xStrich,yStrich,zStrich;
+        float verschX = getMiddleX();
+        float verschY = getMiddleY();
+        float verschZ = getMiddleZ();
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x-verschX;
+            currentPt.y=currentPt.y-verschY;
+            currentPt.z=currentPt.z-verschZ;
+        }
+        for(P3D currentPt : model.points){
+            currentPt.x=(float)(currentPt.x*0.9);
+            currentPt.y=(float)(currentPt.y*0.9);
+            currentPt.z=(float)(currentPt.z*0.9);
+        }
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x+verschX;
+            currentPt.y=currentPt.y+verschY;
+            currentPt.z=currentPt.z+verschZ;
+        }
+        changePointsToDraw();
+        invalidate();
+    }
+
+    public void zoom(float zoomfactor){
+        float xStrich,yStrich,zStrich;
+        float verschX = getMiddleX();
+        float verschY = getMiddleY();
+        float verschZ = getMiddleZ();
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x-verschX;
+            currentPt.y=currentPt.y-verschY;
+            currentPt.z=currentPt.z-verschZ;
+        }
+        for(P3D currentPt : model.points){
+            currentPt.x=(float)(currentPt.x*zoomfactor);
+            currentPt.y=(float)(currentPt.y*zoomfactor);
+            currentPt.z=(float)(currentPt.z*zoomfactor);
+        }
+        for(P3D currentPt : model.points){
+            currentPt.x=currentPt.x+verschX;
+            currentPt.y=currentPt.y+verschY;
+            currentPt.z=currentPt.z+verschZ;
+        }
+        changePointsToDraw();
+        invalidate();
+    }
+
+    public void undo(){
+        switch(pointsNb){
+            case 0:
+                if(newTriangles>0){
+                    this.model.triangles.remove(this.model.triangles.size()-1);
+                    newTriangles--;
+                }
+                return;
+            case 1:
+                this.selectedPoint=null;
+                point1=null;
+                pointsNb--;
+                return;
+            case 2:
+                this.selectedPoint=null;
+                point2=null;
+                pointsNb--;
+                return;
+        }
+    }
+
     public Tri3D getFirstTriangle(){
         return this.firstTriangle;
     }
@@ -286,12 +489,20 @@ public class ImageCanvas extends ImageView {
         }
     }
 
-    public P3D getClosestPoint4Old(PointF pos){
+    public P3D getClosestPoint4(PointF pos){
         //this.populatePointList();
         P3D currPt = this.model.points.get(0);
         double currAbstand = abstand(pos, currPt.getPointF());
-        for (P3D pointInArrayList : this.model.points) {
-            if (abstand(pos, pointInArrayList.getPointF()) < currAbstand /*&& Punkt nicht "hinten"*/) {
+        P3D pointInArrayList;
+        int lastPointToCheck;
+        if(anzahlPunkteInRing*2<=this.model.points.size()){ //sollte immer true sein, da jedes Modell mindestens zwei Ringe haben muesste
+            lastPointToCheck=anzahlPunkteInRing*2;
+        }else{
+            lastPointToCheck=this.model.points.size(); //falls es doch nur einen Ring gibt
+        }
+        for (int i=1;i<lastPointToCheck;i++) { //nur die ersten beiden Ringe
+            pointInArrayList=this.model.points.get(i);
+            if (abstand(pos, pointInArrayList.getPointF()) < currAbstand && i%anzahlPunkteInRing<=this.model.points.indexOf(extremR) ) {
                 currPt = pointInArrayList;
                 currAbstand = abstand(pos, currPt.getPointF());
             }
@@ -300,7 +511,7 @@ public class ImageCanvas extends ImageView {
         //return new P3D(0, 0);   //IF NO POINT FOUND, FALLBACK TO THIS ONE
     }
 
-    public P3D getClosestPoint4(PointF pos){
+    public P3D getClosestPoint4Temp(PointF pos){
         ArrayList<P3D> closestPoints = new ArrayList<P3D>();
         //this.populatePointList();
         //P3D currPt = this.model.points.get(0);
@@ -339,21 +550,66 @@ public class ImageCanvas extends ImageView {
         if(this.pointsNb==1){
             point2 = getClosestPoint4(new PointF(x,y));
             if(point2!=null) {
-                this.pointsNb = 2;
+                if(point2.compare(point1)){ //zweiter Punkt des Dreiecks darf nicht gleich dem ersten Punkt des Dreiecks sein
+                    point2=null;
+                }else {
+                    this.pointsNb = 2;
+                }
             }
             return;
         }
         if(this.pointsNb==2){
             point3 = getClosestPoint4(new PointF(x,y));
+            if(point3.compare(point1)||point3.compare(point2)){ // dritter Punkt muss unterschiedlich zu ersten und zweitem Punkt sein
+                point3=null;
+            }
             if(point3!=null) {
                 this.pointsNb = 0;
                 int alt = this.model.triangles.size();
                 this.model.addTriangleToMesh(new Tri3D(point1, point2, point3));
                 if(alt<this.model.triangles.size()) {
                     ++this.newTriangles;
+                    try {
+                        sortInNewTriangle();
+                    }catch (NullPointerException e){
+                        this.model.triangles.get(this.model.triangles.size()-1).setColour(Color.GREEN);
+                    }catch (IndexOutOfBoundsException e){
+                        this.model.triangles.get(this.model.triangles.size()-1).setColour(Color.RED);
+                    }
                 }
             }
         }
+    }
+
+    public void sortInNewTriangle(){ // sortiert ein neu manuell hinzugefuegtes Dreieck richtig ein (von links nach rechts)
+        if(newTriangles<=1){ //nur ein neues Dreieck => keine Sortierung notwendig
+            return;
+        }
+        int firstNew = this.model.triangles.size()-newTriangles; //TO-DO: als globale Variable abspeichern, aendert sich ja nicht
+        Tri3D lastAddedTri = this.model.triangles.get(this.model.triangles.size()-1); //letztes hinzugefuegtes Dreieck
+        Tri3D currentTri;
+        int position=this.model.triangles.size()-1; //spätere richtige Position des Dreiecks
+        for(int i=this.model.triangles.size()-2;i>=firstNew;i--){ //NOCHMAL UEBERPRUEFEN
+            currentTri = this.model.triangles.get(i);
+            if(IndexModulSumme(lastAddedTri)<IndexModulSumme(currentTri)){
+                position=i;
+            }else{
+               break; // richtige Stelle wurde gefunden
+            }
+        }
+        if(position<this.model.triangles.size()-1) {
+            this.model.triangles.remove(lastAddedTri);
+            this.model.triangles.add(position, lastAddedTri);
+        }else{
+            return;
+        }
+    }
+
+    public int IndexModulSumme(Tri3D dreieck){
+        int p0 = this.model.points.indexOf(dreieck.getp0())%anzahlPunkteInRing;
+        int p1 = this.model.points.indexOf(dreieck.getp1())%anzahlPunkteInRing;
+        int p2 = this.model.points.indexOf(dreieck.getp2())%anzahlPunkteInRing;
+        return (p0+p1+p2);
     }
 
     public void setSelectedPoint(P3D p){
@@ -648,12 +904,14 @@ public class ImageCanvas extends ImageView {
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
+        int punkte=0;
+        int farbe=0;
             for (int i = 0; i < model.points.size(); i++) {
                 //if(points.get(i).z<=extremZ) {
                     /*if (selectedPointIndex == i) {
                         canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, selectMarker);
                     } else {*/
-                    canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, pointMarker);
+                    canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, pointMarkers[farbe]);
                     //}
                     if (this.pointsNb == 1) {
                         canvas.drawCircle(this.point1.x, this.point1.y, 20, selectMarker);
@@ -665,26 +923,146 @@ public class ImageCanvas extends ImageView {
                     if (selectedPointIndex == i) {
                         canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, selectMarker);
                     }
+                    if(++punkte%anzahlPunkteInRing==0){
+                        if(++farbe>=pointMarkers.length){
+                            farbe=0;
+                        }
+                    }
                 //}
             }
-            for(int i = 0; i < model.points.size(); i++){
+            /*for(int i = 0; i < model.points.size(); i++){
                 canvas.drawText(""+i, pointsToDraw.get(i).x,pointsToDraw.get(i).y, new Paint(Color.CYAN));
-            }
+            }*/
+
+
             int i=0;
             Tri3D currentTri;
-            while (i<model.triangles.size()) {
-                currentTri = model.triangles.get(i++);
-                canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
-                //currentTri = currentTri.getNextTriangle();
-            }
+            /*try{
+                float maxDeckel = this.model.points.get(0).z; //points=Ring
+                float maxBoden = this.model.points.get(this.model.points.size()-anzahlPunkteInRing).z;
+                int maxPos=0;
+                for(int j=1;j<anzahlPunkteInRing;j++){
+                    if(maxDeckel<this.model.points.get(j).z){
+                        maxDeckel=this.model.points.get(j).z;
+                        maxPos=j;
+                    }
+                    if(maxBoden<this.model.points.get(this.model.points.size()-anzahlPunkteInRing+j).z){
+                        maxBoden=this.model.points.get(this.model.points.size()-anzahlPunkteInRing+j).z;
+                    }
+                }
+                if(maxBoden>maxDeckel){
+                    for(int j=0;j<boden.size();j++){
+                        currentTri = boden.get(j);
+                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
+                    }
+                }else{
+                    for(int j=0;j<deckel.size();j++){
+                        currentTri = deckel.get(j);
+                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
+                    }
+                }
+                seiten.clear();
+                for(int h=2*boden.size();h<model.triangles.size();h++){
+                    seiten.add(model.triangles.get(h)); //nur zu Testzwecken, dauerndes Umaendern der Liste unnoetig!
+                }
+                if(seiten.size()>0) {
+                    int hinten = hinten(model.points.get(maxPos));
+                    i = 0;
+                    int ebenen = this.model.points.size() / anzahlPunkteInRing - 1;
+                    int next;
+                    for (int j = 0; j < ebenen; j++) {
+                        next = hinten + (j * anzahlPunkteInRing * 2);
+                        currentTri = this.model.triangles.get(next);
+                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                        canvas.drawPath(pathify(currentTri), contourPaint);
+                        i++;
+                    }
+                    int weiter1 = hinten, weiter2 = hinten;
+                    for (int j = 0; j < ebenen; j++) {
+                        if (--weiter1 < 0) {
+                            weiter1 = anzahlPunkteInRing * 2;
+                        }
+                        if (++weiter2 > anzahlPunkteInRing * 2) {
+                            weiter2 = 0;
+                        }
+                        currentTri = this.model.triangles.get(hinten + (j * anzahlPunkteInRing * 2) + weiter1);
+                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                        canvas.drawPath(pathify(currentTri), contourPaint);
+                        i++;
+                        if (i == seiten.size()) {
+                            break;
+                        }
+                        currentTri = this.model.triangles.get(hinten + (j * anzahlPunkteInRing) + weiter2);
+                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                        canvas.drawPath(pathify(currentTri), contourPaint);
+                        i++;
+                        if (i == seiten.size()) {
+                            break;
+                        }
+                    }
+                }
+
+                if(maxBoden<=maxDeckel){
+                    for(int j=0;j<boden.size();j++){
+                        currentTri = boden.get(j);
+                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
+                    }
+                }else{
+                    for(int j=0;j<deckel.size();j++){
+                        currentTri = deckel.get(j);
+                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
+                    }
+                }
+
+            }catch (Exception e) {
+                contourPaint.setColor(Color.RED);*/
+                int h=0;
+                while (h < model.triangles.size()) {
+                    currentTri = model.triangles.get(h++);
+                    canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                    canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
+                    // currentTri = currentTri.getNextTriangle();
+                }
+           // }
+
+
+
     }
+
+    public int hinten(P3D punkt){
+        Tri3D currentTri;
+        for(int i=0;i<seiten.size();i++){
+            currentTri=seiten.get(i);
+            if(currentTri.getp0().compare(punkt)||currentTri.getp1().compare(punkt)||currentTri.getp0().compare(punkt)){
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /*public void isSorted(){
+        if(Dreiecke.size()==1){
+            return;
+        }
+        for(int i=0;i<Dreiecke.size()-1;i++){
+            if(Dreiecke.get(i).z<Dreiecke.get(i+1).z){
+                contourPaint=new Paint(Color.RED);
+            }
+        }
+    }*/
 
     public Path pathify(Tri3D currentTri){
         Path pathTriThis = new Path();
         int p0=model.points.indexOf(currentTri.getp0());
         int p1=model.points.indexOf(currentTri.getp1());
         int p2=model.points.indexOf(currentTri.getp2());
+        pathTriThis.moveTo(pointsToDraw.get(p0).x, pointsToDraw.get(p0).y);
+        pathTriThis.lineTo(pointsToDraw.get(p1).x, pointsToDraw.get(p1).y);
+        pathTriThis.lineTo(pointsToDraw.get(p2).x, pointsToDraw.get(p2).y);
         pathTriThis.moveTo(pointsToDraw.get(p0).x, pointsToDraw.get(p0).y);
         pathTriThis.lineTo(pointsToDraw.get(p1).x, pointsToDraw.get(p1).y);
         pathTriThis.lineTo(pointsToDraw.get(p2).x, pointsToDraw.get(p2).y);

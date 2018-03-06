@@ -31,7 +31,12 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
     public int anzahlPunkteInRing; //Anzahl der Eckpunkte jedes Ringes
     public int anzahlRinge; //Anzahl der Ringe
     public ArrayList<P3D> polygonringe = new ArrayList<P3D>(); //nur aeussere Punkte
+    public float[][] originalPunkte;
     //boolean xy = true;
+    public boolean rotate = false;
+    public boolean versch = false;
+    public boolean zoom = false;
+    public boolean isFilled = false; //Dreiecke wurden noch nicht aufgefuellt
 
 
     //private ImageView figure;  //now in customized ShapeCanvas-class
@@ -64,7 +69,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
             }
         });
 
-        anzahlPunkteInRing= getIntent().getIntExtra("anzahlPunkteImRing", 0);
+        /*anzahlPunkteInRing= getIntent().getIntExtra("anzahlPunkteImRing", 0);
         anzahlRinge= getIntent().getIntExtra("anzahlRinge",0);
 
         //figure.fourthActivity = true;
@@ -72,10 +77,43 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         rebuildTriangles(getIntent().getIntArrayExtra("p0"),getIntent().getIntArrayExtra("p1"),getIntent().getIntArrayExtra("p2"));
         rebuildRing(getIntent().getIntArrayExtra("kompletterRing"));
 
+        try {
+            fillBottom();
+        }catch (NullPointerException e){
+            Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+        }catch (IndexOutOfBoundsException e){
+            Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+        }
 
-        figure.setPointsToDraw();
-        //mockup1();
+        figure.setPointsToDraw();*/
+        mockup1();
+        this.figure.anzahlPunkteInRing = this.anzahlPunkteInRing;
+        copy();
+    }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        if(!isFilled){
+            firstTwoRings();
+        }
+    }
+
+    public void copy(){
+        this.originalPunkte = new float[this.figure.model.points.size()][3];
+        for(int i=0;i<this.figure.model.points.size();i++){
+            this.originalPunkte[i][0]=this.figure.model.points.get(i).x;
+            this.originalPunkte[i][1]=this.figure.model.points.get(i).y;
+            this.originalPunkte[i][2]=this.figure.model.points.get(i).z;
+        }
+    }
+
+    public void reset(){
+        for(int i=0;i<this.figure.model.points.size();i++){
+            this.figure.model.points.get(i).x=this.originalPunkte[i][0];
+            this.figure.model.points.get(i).y=this.originalPunkte[i][1];
+            this.figure.model.points.get(i).z=this.originalPunkte[i][2];
+        }
+        this.figure.changePointsToDraw();
     }
 
     public void rebuildPoints(float[] x, float[] y, float[] z){
@@ -158,6 +196,9 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         figure.model.addPointToMesh(new P3D(2*abstandBreite,abstandHoehe,10));
         figure.model.addPointToMesh(new P3D(3*abstandBreite,abstandHoehe,10));
         figure.model.addPointToMesh(new P3D(4*abstandBreite,abstandHoehe,20));
+
+        figure.extremR=figure.model.points.get(figure.model.points.size()-1);
+
         figure.model.addPointToMesh(new P3D(3*abstandBreite,abstandHoehe,30));
         figure.model.addPointToMesh(new P3D(2*abstandBreite,abstandHoehe,30));
 
@@ -194,6 +235,12 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         this.anzahlPunkteInRing=6;
         this.anzahlRinge=3;
         this.figure.setPointsToDraw();
+        for(int i=0;i<figure.model.triangles.size()/2;i++){
+            this.figure.deckel.add(this.figure.model.triangles.get(i));
+        }
+        for(int i=figure.model.triangles.size()/2;i<figure.model.triangles.size();i++){
+            this.figure.boden.add(this.figure.model.triangles.get(i));
+        }
 
     }
 
@@ -206,33 +253,25 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         item = menu1.findItem(R.id.action_takePicSA);
         item.setVisible(false);
         item = menu1.findItem(R.id.action_rotatePicFA);
-        item.setVisible(true);
+        item.setVisible(false);
         item = menu1.findItem(R.id.action_newTriFA);
-        item.setVisible(true);
+        item.setVisible(false);
         item = menu1.findItem(R.id.action_movePtFA);
         item.setVisible(false);
         item = menu1.findItem(R.id.action_selectPtFA);
-        item.setVisible(true);
+        item.setVisible(false);
         item = menu1.findItem(R.id.action_selectTriFA);
-        item.setVisible(true);
+        item.setVisible(false);
         item = menu1.findItem(R.id.action_delTriFA);
-        item.setVisible(true);
+        item.setVisible(false);
         item = menu1.findItem(R.id.action_nextActivityFA);
         item.setVisible(false);
         item = menu1.findItem(R.id.action_rotateX);
-        item.setVisible(true);
+        item.setVisible(rotate);
         item = menu1.findItem(R.id.action_rotateY);
-        item.setVisible(true);
+        item.setVisible(rotate);
         item = menu1.findItem(R.id.action_rotateZ);
-        item.setVisible(true);
-        //item.setVisible(picTaken && figure.canvasTypeTri);
-		//SideView
-		//figure.canvasTypeTri = false;
-		//via additional XOR
-		//eq.	(0,0) = 0 ^ 0 = 0
-		//		(0,1) = 0 ^ 0 = 0
-		//		(1,0) = 0 ^ 1 = 1
-		//		(1,1) = 1 ^ 1 = 0
+        item.setVisible(rotate);
 		item = menu1.findItem(R.id.action_rotatePicSA);
         item.setVisible(false);
         item = menu1.findItem(R.id.action_newPointSA);
@@ -245,17 +284,146 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         item.setVisible(false);
         item = menu1.findItem(R.id.action_nextActivitySA);
         item.setVisible(false);
-        item = menu1.findItem(R.id.action_XZ);
+        item = menu1.findItem(R.id.action_XZ); //xz-Koordinaten werden angezeigt
+        item.setVisible(false);
+        item = menu1.findItem(R.id.action_rotate);
+        item.setVisible(true);
+        item = menu1.findItem(R.id.action_versch);
+        item.setVisible(true);
+        item = menu1.findItem(R.id.action_verschOben);
+        item.setVisible(versch);
+        item = menu1.findItem(R.id.action_verschUnten);
+        item.setVisible(versch);
+        item = menu1.findItem(R.id.action_verschLinks);
+        item.setVisible(versch);
+        item = menu1.findItem(R.id.action_verschRechts);
+        item.setVisible(versch);
+        item = menu1.findItem(R.id.action_zoom);
+        item.setVisible(true);
+        item = menu1.findItem(R.id.action_zoomPlus);
+        item.setVisible(zoom);
+        item = menu1.findItem(R.id.action_zoomMinus);
+        item.setVisible(zoom);
+        item = menu1.findItem(R.id.action_fill);
+        item.setVisible(true);
+        item = menu1.findItem(R.id.action_undo);
+        item.setVisible(!versch);
+        item = menu1.findItem(R.id.action_reset);
         item.setVisible(true);
         //item.setVisible((picTaken && figure.canvasTypeTri) ^ picTaken);
         return true;
     }
 
-    public void fillSide(){
+
+    public void firstTwoRings(){
+        if(anzahlRinge<2){
+            return;
+        }
+        int IndexExLinks=0;
+        int IndexExRechts=this.figure.model.points.indexOf(figure.extremR); //uebertragen aus dritter Acticity?
+        float minAbstandLinks=this.polygonringe.get(IndexExLinks).x;
+        if(minAbstandLinks>this.polygonringe.get(IndexExLinks+anzahlPunkteInRing).x){
+            minAbstandLinks=this.polygonringe.get(IndexExLinks+anzahlPunkteInRing).x;
+        }
+        float minAbstandRechts=Resources.getSystem().getDisplayMetrics().widthPixels-this.polygonringe.get(IndexExRechts).x;
+        if(minAbstandRechts>Resources.getSystem().getDisplayMetrics().widthPixels-this.polygonringe.get(IndexExRechts+anzahlPunkteInRing).x){
+            minAbstandRechts=this.polygonringe.get(IndexExRechts+anzahlPunkteInRing).x;
+        }
+        float minAbstand;
+        if(minAbstandLinks<minAbstandRechts){
+            minAbstand=minAbstandLinks;
+        }else{
+            minAbstand=minAbstandRechts;
+        }
+        minAbstand=minAbstand-20; //Durchmesser von gemalten Punkten auf Bildschirm
+        float k=Resources.getSystem().getDisplayMetrics().widthPixels-(minAbstand*2);
+        float scalefactor = Resources.getSystem().getDisplayMetrics().widthPixels/k;
+        this.figure.zoom(scalefactor);
+        float ringmitte=(polygonringe.get(IndexExLinks).y+polygonringe.get(IndexExLinks+anzahlPunkteInRing).y
+                +polygonringe.get(IndexExRechts).y+polygonringe.get(IndexExRechts+anzahlPunkteInRing).y)/4;
+        //float bildschirmmitte=Resources.getSystem().getDisplayMetrics().heightPixels/2;
+        float bildmitte=figure.getHeight()/2;
+        float versch = bildmitte-ringmitte;
+        figure.upOrDown(versch);
+    }
+
+    public void fillDown(){ //kopiere die Dreiecke, die sich zwischen Ring 1 und Ring 2 befinden, nach unten
+        if(anzahlRinge==2||figure.model.triangles.size()==0||figure.newTriangles==0){ //wenn es nur zwei Ringe oder gar keine Dreiecke im Modell oder keine neu hinzugefuegten gibt
+            return;
+        }
+        int counter = figure.model.triangles.size()-figure.newTriangles;
+        Tri3D currentTriangle = figure.model.triangles.get(counter);
+        P3D p0,p1,p2;
+        int pos0, pos1, pos2;
+        int neueDreiecke=figure.newTriangles;
+        for(int i=1;i<=anzahlRinge-2;i++){
+            for(int j=0;j<neueDreiecke;j++){
+                pos0=this.polygonringe.indexOf(currentTriangle.getp0())+(i*anzahlPunkteInRing);
+                pos1=this.polygonringe.indexOf(currentTriangle.getp1())+(i*anzahlPunkteInRing);
+                pos2=this.polygonringe.indexOf(currentTriangle.getp2())+(i*anzahlPunkteInRing);
+                p0 = this.polygonringe.get(pos0);
+                p1 = this.polygonringe.get(pos1);
+                p2 = this.polygonringe.get(pos2);
+                figure.model.addTriangleToMesh(new Tri3D(p0,p1,p2));
+                currentTriangle = figure.model.triangles.get(++counter);
+                figure.newTriangles++;
+            }
+        }
+        figure.invalidate();
+    }
+
+    public void fillSide(){ //fuelle die nicht sichtbaren Seiten des Modells mithilfe der manuell eingefuegten Dreiecke auf
+        int neededTriangles = anzahlPunkteInRing*2;
+        int anzahl=this.figure.model.triangles.size();
+        int counter = anzahl-figure.newTriangles;
+        if(anzahl==0||figure.newTriangles==0){
+            return;
+        }
+        Tri3D currentTriangle = figure.model.triangles.get(counter);
+        P3D p0,p1,p2;
+        int pos0, pos1, pos2;
+        int schrittweite = figure.newTriangles/2;
+        while(figure.newTriangles<neededTriangles){
+            pos0=this.polygonringe.indexOf(currentTriangle.getp0());
+            pos1=this.polygonringe.indexOf(currentTriangle.getp1());
+            pos2=this.polygonringe.indexOf(currentTriangle.getp2());
+
+            if((pos0+schrittweite)%this.anzahlPunkteInRing==0){
+                pos0=(pos0+schrittweite)-this.anzahlPunkteInRing;
+            }else{
+                pos0=pos0+schrittweite;
+            }
+            if((pos1+schrittweite)%this.anzahlPunkteInRing==0){
+                pos1=(pos1+schrittweite)-this.anzahlPunkteInRing;
+            }else{
+                pos1=pos1+schrittweite;
+            }
+            if((pos2+schrittweite)%this.anzahlPunkteInRing==0){
+                pos2=(pos2+schrittweite)-this.anzahlPunkteInRing;
+            }else{
+                pos2=pos2+schrittweite;
+            }
+            p0 = this.polygonringe.get(pos0);
+            p1 = this.polygonringe.get(pos1);
+            p2 = this.polygonringe.get(pos2);
+            figure.model.addTriangleToMesh(new Tri3D(p0,p1,p2));
+            if(anzahl<figure.model.triangles.size()){ //wenn das Dreieck tatsaechlich eingefuehrt wurde in addTriangleToMesh
+                anzahl= figure.model.triangles.size();
+                figure.newTriangles++;
+            }
+            if(++counter<anzahl) {
+                currentTriangle = figure.model.triangles.get(counter);
+            }
+        }
+        figure.setOperationID(1); //???
+        figure.invalidate();
+    }
+
+    public void fillSideOld(){
         //Tri3D currentTriangle = figure.firstNewTriangle;
         int anzahl= figure.model.triangles.size();
 
-        if(anzahl==0){
+        if(anzahl==0||figure.newTriangles==0){
             return;
         }
 
@@ -300,7 +468,14 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         figure.invalidate();
     }
 
-    public void fillBottom(){
+    public void fillBottom(){ //kopiere die Dreiecke des "Deckels" des Modells (TopView) auf den Boden des Modells
+        int abstandLetzterRing=this.polygonringe.size()-this.anzahlPunkteInRing;
+        for(int i=0;i<this.figure.model.triangles.size();i++){
+            int pos0=this.polygonringe.indexOf(figure.model.triangles.get(i).getp0())+abstandLetzterRing;
+            int pos1=this.polygonringe.indexOf(figure.model.triangles.get(i).getp1())+abstandLetzterRing;
+            int pos2=this.polygonringe.indexOf(figure.model.triangles.get(i).getp2())+abstandLetzterRing;
+            figure.model.addTriangleToMesh(new Tri3D(this.polygonringe.get(pos0),this.polygonringe.get(pos1),this.polygonringe.get(pos2)));
+        }
 
     }
 
@@ -319,15 +494,33 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
-            case R.id.action_rotatePicFA:
+            case R.id.action_fill:
                 //figure.setRotation(figure.getRotation() + 90);
                 try {
                     fillSide();
+                    //fillSide();
                 }catch (NullPointerException e){
-                    Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FourthActivity.this, "NullPointerException Side", Toast.LENGTH_SHORT).show();
                 }catch (IndexOutOfBoundsException e){
-                    Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException Side", Toast.LENGTH_SHORT).show();
+                }catch (Exception e){
+                    Toast.makeText(FourthActivity.this, "SomeOtherException Side", Toast.LENGTH_SHORT).show();
                 }
+                try {
+                    fillDown();
+                    //fillSide();
+                }catch (NullPointerException e){
+                    Toast.makeText(FourthActivity.this, "NullPointerException Down", Toast.LENGTH_SHORT).show();
+                }catch (IndexOutOfBoundsException e){
+                    Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException Down", Toast.LENGTH_SHORT).show();
+                }catch (Exception e){
+                    Toast.makeText(FourthActivity.this, "SomeOtherException Down", Toast.LENGTH_SHORT).show();
+                }
+                isFilled=true;
+                for(int i=this.figure.boden.size()*2;i<this.figure.model.triangles.size();i++){
+                    this.figure.seiten.add(this.figure.model.triangles.get(i));
+                }
+                reset();
                 return true;
 
             case R.id.action_newTriFA:    //TODO: CrossClassConnect
@@ -363,6 +556,27 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
             case R.id.action_delTriFA:    //TODO: CCConnect - need Method to select Triangle! (in CANVAS?)
                 figure.deleteTri(figure.getSelectedTri()); // .delete(TriangleOperations.getSelectedTriangle());
                 Toast.makeText(FourthActivity.this, "Ausgewähltes Dreieck löschen", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.action_undo:
+                try {
+                    this.figure.undo();
+                    this.figure.invalidate();
+                }catch (NullPointerException e){
+                    Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+                }catch (IndexOutOfBoundsException e){
+                    Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+
+            case R.id.action_reset:
+                try {
+                    reset();
+                    this.figure.invalidate();
+                }catch (NullPointerException e){
+                    Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+                }catch (IndexOutOfBoundsException e){
+                    Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+                }
                 return true;
 
             case R.id.action_rotateX:
@@ -431,6 +645,43 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
                 return true;*/
 
             //former 2ndAct-Actions
+            case R.id.action_rotate:
+                this.rotate=true;
+                this.versch=false;
+                this.zoom=false;
+                invalidateOptionsMenu();
+                return true;
+            case R.id.action_versch:
+                this.rotate=false;
+                this.versch=true;
+                this.zoom=false;
+                invalidateOptionsMenu();
+                return true;
+            case R.id.action_zoom:
+                this.rotate=false;
+                this.versch=false;
+                this.zoom=true;
+                invalidateOptionsMenu();
+                return true;
+            case R.id.action_verschOben:
+                this.figure.up();
+                return true;
+            case R.id.action_verschUnten:
+                this.figure.down();
+                return true;
+            case R.id.action_verschLinks:
+                this.figure.left();
+                return true;
+            case R.id.action_verschRechts:
+                this.figure.right();
+                return true;
+            case R.id.action_zoomPlus:
+                this.figure.zoomPlus();
+                return true;
+            case R.id.action_zoomMinus:
+                this.figure.zoomMinus();
+                return true;
+
 			case R.id.action_newPointSA:
                 figure.setOperationID(1);
                 Toast.makeText(FourthActivity.this, "Neuer Punkt", Toast.LENGTH_SHORT).show();

@@ -496,6 +496,11 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
 
             case R.id.action_fill:
                 //figure.setRotation(figure.getRotation() + 90);
+                if(isFilled){
+                    figure.xy=!figure.xy;
+                    figure.invalidate();
+                    return true;
+                }
                 try {
                     fillSide();
                     //fillSide();

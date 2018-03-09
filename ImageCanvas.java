@@ -281,17 +281,17 @@ public class ImageCanvas extends ImageView {
     }
 
     public void changePointsToDraw(){
-        if(xy){
+        //if(xy){
             for (int i = 0; i < model.points.size(); i++) {
                 this.pointsToDraw.get(i).x = this.model.points.get(i).x;
                 this.pointsToDraw.get(i).y = this.model.points.get(i).y;
             }
-        }else {
+        /*}else {
             for (int i = 0; i < model.points.size(); i++) {
                 this.pointsToDraw.get(i).x = this.model.points.get(i).x;
                 this.pointsToDraw.get(i).y = this.model.points.get(i).z;
             }
-        }
+        }*/
         this.invalidate();
     }
 
@@ -937,7 +937,17 @@ public class ImageCanvas extends ImageView {
 
             int i=0;
             Tri3D currentTri;
-            /*try{
+            if(!xy){
+                int h=0;
+                while (h < model.triangles.size()) {
+                    currentTri = model.triangles.get(h++);
+                    canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                    canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
+                    // currentTri = currentTri.getNextTriangle();
+                }
+                return;
+            }
+            try{
                 float maxDeckel = this.model.points.get(0).z; //points=Ring
                 float maxBoden = this.model.points.get(this.model.points.size()-anzahlPunkteInRing).z;
                 int maxPos=0;
@@ -965,7 +975,16 @@ public class ImageCanvas extends ImageView {
                 }
                 seiten.clear();
                 for(int h=2*boden.size();h<model.triangles.size();h++){
+                    /*if(h%2==0){
+                        model.triangles.get(h).setColour(Color.GREEN);
+                    }else{
+                        model.triangles.get(h).setColour(Color.BLUE);
+                    }*/
                     seiten.add(model.triangles.get(h)); //nur zu Testzwecken, dauerndes Umaendern der Liste unnoetig!
+                }
+                boolean[] dreiecke = new boolean[seiten.size()];
+                for(int h=0;h<dreiecke.length;h++){
+                    dreiecke[h]=false;
                 }
                 if(seiten.size()>0) {
                     int hinten = hinten(model.points.get(maxPos));
@@ -974,34 +993,62 @@ public class ImageCanvas extends ImageView {
                     int next;
                     for (int j = 0; j < ebenen; j++) {
                         next = hinten + (j * anzahlPunkteInRing * 2);
-                        currentTri = this.model.triangles.get(next);
-                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
+                        if(next>=seiten.size()||i>=seiten.size()){
+                            break;
+                        }
+                        currentTri = seiten.get(next);
+                        dreiecke[next]=true;
+                        canvas.drawPath(pathify(currentTri), currentTri.getColour());
                         canvas.drawPath(pathify(currentTri), contourPaint);
                         i++;
                     }
                     int weiter1 = hinten, weiter2 = hinten;
-                    for (int j = 0; j < ebenen; j++) {
+                    //for (int h=0;h<2*anzahlPunkteInRing;h++) {
+                    while(i<seiten.size()){
+                        /*if(i>=seiten.size()){
+                            break;
+                        }*/
                         if (--weiter1 < 0) {
-                            weiter1 = anzahlPunkteInRing * 2;
+                            weiter1 = (anzahlPunkteInRing * 2)-1;
                         }
-                        if (++weiter2 > anzahlPunkteInRing * 2) {
+                        if (++weiter2 >= anzahlPunkteInRing * 2) {
                             weiter2 = 0;
                         }
-                        currentTri = this.model.triangles.get(hinten + (j * anzahlPunkteInRing * 2) + weiter1);
-                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                        canvas.drawPath(pathify(currentTri), contourPaint);
-                        i++;
-                        if (i == seiten.size()) {
-                            break;
-                        }
-                        currentTri = this.model.triangles.get(hinten + (j * anzahlPunkteInRing) + weiter2);
-                        canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                        canvas.drawPath(pathify(currentTri), contourPaint);
-                        i++;
-                        if (i == seiten.size()) {
-                            break;
+                        for(int j = 0; j < ebenen; j++){
+                            next = weiter1 + (j * anzahlPunkteInRing * 2);
+                            if(next<seiten.size()&&dreiecke[next]==false) {
+                                currentTri = seiten.get(next);
+                                dreiecke[next]=true;
+                                canvas.drawPath(pathify(currentTri), currentTri.getColour());
+                                canvas.drawPath(pathify(currentTri), contourPaint);
+                                i++;
+                                if (i == seiten.size()) {
+                                    break;
+                                }
+                            }
+                            next = weiter2 + (j * anzahlPunkteInRing * 2);
+                            if(next<seiten.size()&&dreiecke[next]==false) {
+                                currentTri = seiten.get(next);
+                                dreiecke[next]=true;
+                                canvas.drawPath(pathify(currentTri), currentTri.getColour());
+                                canvas.drawPath(pathify(currentTri), contourPaint);
+                                i++;
+                                if (i == seiten.size()) {
+                                    break;
+                                }
+                            }
                         }
                     }
+                }
+
+                int nicht = 0;
+                for(int h=0;h<dreiecke.length;h++){
+                    if(dreiecke[h]==false){
+                        nicht++;
+                    }
+                }
+                if(nicht>0){
+                    canvas.drawText(nicht+"", 50, 50, new Paint(Color.RED));
                 }
 
                 if(maxBoden<=maxDeckel){
@@ -1019,7 +1066,7 @@ public class ImageCanvas extends ImageView {
                 }
 
             }catch (Exception e) {
-                contourPaint.setColor(Color.RED);*/
+                contourPaint.setColor(Color.RED);
                 int h=0;
                 while (h < model.triangles.size()) {
                     currentTri = model.triangles.get(h++);
@@ -1027,21 +1074,24 @@ public class ImageCanvas extends ImageView {
                     canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
                     // currentTri = currentTri.getNextTriangle();
                 }
-           // }
-
-
+            }
 
     }
 
     public int hinten(P3D punkt){
         Tri3D currentTri;
+        float max=Integer.MIN_VALUE;
+        int index=0;
         for(int i=0;i<seiten.size();i++){
             currentTri=seiten.get(i);
             if(currentTri.getp0().compare(punkt)||currentTri.getp1().compare(punkt)||currentTri.getp0().compare(punkt)){
-                return i;
+                if(max<currentTri.getp0().z+currentTri.getp1().z+currentTri.getp2().z){
+                    max=currentTri.getp0().z+currentTri.getp1().z+currentTri.getp2().z;
+                    index=i;
+                }
             }
         }
-        return 0;
+        return index;
     }
 
     /*public void isSorted(){

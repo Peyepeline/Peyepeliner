@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/menuToolbarFA"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat"/>
+
+    <!-->
+       <LinearLayout
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="left"
+           android:orientation="horizontal">
+
+           <Spinner
+               android:id="@+id/menuMenu"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"/>
+
+           <ImageButton
+               android:id="@+id/menuMenu"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:onClick="showDropDownMenu"
+               android:src="@android:drawable/arrow_down_float"/>
+
+           <ImageButton
+               android:id="@+id/importFromCamera"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:src="@android:drawable/ic_menu_camera"/>
+
+           <ImageButton
+               android:id="@+id/rotateButton"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:src="@android:drawable/ic_menu_rotate"/>
+
+           <Button
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="@string/placeholder"/>
+
+       </LinearLayout>
+    </!-->
+    <!-->
+    <FrameLayout
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+        <ImageView
+            android:id="@+id/importedPhoto"
+            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter" />
+        <ImageView
+            android:id="@+id/triangleCanvasLayer"
+            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter" />
+    </FrameLayout>
+    </!-->
+    <!--//über triCanvas liegt ein 100x100-canvas, wo das achsenobjekt angezeigt werden soll-->
+    <FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <com.example.core.peyepeliner.ImageCanvas
+            android:id="@+id/triCanvas"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <com.example.core.peyepeliner.ImageCanvas
+            android:id="@+id/axisCanvas"
+            android:layout_width="100px"
+            android:layout_height="100px" />
+    </FrameLayout>
+    <!-->
+    <ImageView
+        android:id="@+id/importedPhoto"
+        android:adjustViewBounds="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter" />
+    </!-->
+
+</LinearLayout>

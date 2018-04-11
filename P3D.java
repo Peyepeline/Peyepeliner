@@ -81,11 +81,25 @@ class P3D {
 		this.y = p.y;
 	}
 
+	public void set(P3D p){
+        this.x = p.x;
+        this.y = p.y;
+        this.z = p.z;
+    }
+
 	//adds vector (move by vector)
 	public void aV(vector v){
         this.x += v.x;
         this.y += v.y;
         this.z += v.z;
+    }
+
+    public boolean compare(P3D p){
+        if(this.x==p.x&&this.y==p.y&&this.z==p.z){
+            return true;
+        }else{
+            return false;
+        }
     }
 
 }
@@ -138,7 +152,7 @@ class vector{
 
     //EVEN IN 3D, |v| is sqrt(v.x^2 + v.y^2 + v.z^2) !!!
     public double length(){
-        return Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z);
+        return Math.abs(Math.sqrt(this.x*this.x+this.y*this.y+this.z*this.z));
     }
 
     //calculates angle between vectors this and v

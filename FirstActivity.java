@@ -20,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 //import android.view.MenuItem;
 import android.view.*;
+import android.widget.ImageView;
 import android.widget.Toast;
 import android.view.View;
 //import android.widget.ImageButton;
@@ -30,6 +31,8 @@ import android.graphics.*;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static android.graphics.Matrix.*;
 
 
 public class FirstActivity extends AppCompatActivity implements AlertPositiveListener {
@@ -78,6 +81,8 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
             }
         });
 
+
+        //importedPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER); // ZUR SICHERHEIT DRIN LASSEN??????
 
     /*    importFromCamera = (ImageButton) findViewById(R.id.importFromCamera);
         importFromCamera.setOnClickListener(new View.OnClickListener() {
@@ -236,6 +241,7 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
 
             case R.id.action_delPointSA:
                 importedPhoto.setOperationID(2);
+                importedPhoto.deletePoint();
                 Toast.makeText(FirstActivity.this, "Punkt loeschen", Toast.LENGTH_SHORT).show();
                 if(importedPhoto.getSelectedPointIndex()==-1){
                     Toast.makeText(FirstActivity.this, "KEIN PUNKT AUSGEWÄHLT!", Toast.LENGTH_LONG).show();
@@ -244,6 +250,7 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
 
             case R.id.action_delEvSA:
                 importedPhoto.setOperationID(3);
+                importedPhoto.deleteEverything();
                 Toast.makeText(FirstActivity.this, "Alles loeschen", Toast.LENGTH_SHORT).show();
                 return true;
 
@@ -422,6 +429,9 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
                 importedPhoto.setImageBitmap(photo);
                 /*Bitmap photo = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                 importedPhoto.setImageBitmap(photo);*/
+            }
+            if(isPicTaken()){
+                picTaken=false; //falls schon ein Foto gemacht wurde; wuerde picTaken auf true bleiben, wuerde Canvas-Typ zwangsweise geaendert
             }
             choseCanvasType();
         }

@@ -73,10 +73,21 @@
             android:scaleType="fitCenter" />
     </FrameLayout>
     </!-->
+    <!--//über triCanvas liegt ein 100x100-canvas, wo das achsenobjekt angezeigt werden soll-->
+    <FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
     <com.example.core.peyepeliner.ImageCanvas
         android:id="@+id/triCanvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+        <com.example.core.peyepeliner.ImageCanvas
+            android:id="@+id/axisCanvas"
+            android:layout_width="100px"
+            android:layout_height="100px" />
+    </FrameLayout>
     <!-->
     <ImageView
         android:id="@+id/importedPhoto"

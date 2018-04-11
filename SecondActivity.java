@@ -163,6 +163,7 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
 
             case R.id.action_delPointSA:
                 importedPhoto.setOperationID(2);
+                importedPhoto.deletePoint();
                 Toast.makeText(SecondActivity.this, "Punkt loeschen", Toast.LENGTH_SHORT).show();
                 if(importedPhoto.getSelectedPointIndex()==-1){
                     Toast.makeText(SecondActivity.this, "KEIN PUNKT AUSGEWÄHLT!", Toast.LENGTH_LONG).show();
@@ -171,6 +172,7 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
 
             case R.id.action_delEvSA:
                 importedPhoto.setOperationID(3);
+                importedPhoto.deleteEverything();
                 Toast.makeText(SecondActivity.this, "Alles loeschen", Toast.LENGTH_SHORT).show();
                 return true;
 

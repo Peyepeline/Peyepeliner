@@ -5,7 +5,10 @@ package com.example.core.peyepeliner;
  */
 
 import android.graphics.*;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 
 class edge {
     private P3D p0;
@@ -252,6 +255,9 @@ public class Model3D {
         ring.remove(pos);
         ring.add(pos, r0);
         //==================================================
+        //sort according to polar coordinates (respective to ring[0])
+        sortRing(ring);
+        //==================================================
 		//TODO - implement! - done, see above.
 		//receives topView-ptList, creates list with RingPoints (and edges?) CONSERVING ORDER!
 		//calc centre c,
@@ -260,6 +266,84 @@ public class Model3D {
 		//add point to ArrayList<P3D> ring (order conserved)
 		return ring;
 	}
+
+
+    private ArrayList<P3D> sortRing(ArrayList<P3D> r){
+        //sort r via parallelly sorting its items polarCoordinates
+        //use Array, since ArrayList can't handle primitive types
+        //double[] polarRing = new double[r.size()];
+        //fill polarRing with corresponding values
+        //for (int i = 0; i < polarRing.length; i++){
+        //    polarRing[i] = getPolarCoords(r.get(0), r.get(i));
+        //}
+        //quicksort both parallelly
+        //^BLAH BLAH^ instead calculate and compare the angles, yet don't overwrite the elements with them.
+        //don't start @0 to conserve first point equalling smallest
+        ArrayList<P3D> sortedRing = new ArrayList<P3D>();
+        sortedRing = quicksort(r, 1, r.size()-1);
+        return sortedRing;
+    }
+
+    private double getPolarCoords(P3D c, P3D p){	//returns p in polar coordinates relative to center c
+        //working on topView-coord.-system
+        //CAUTION: topView(x)=reality(x), topView(y)=reality(z), reality(y) not in topView
+        //TODO - OFFSET by pi()/4   !!!
+        double ftheta = 0;
+        //use p.x, p.z; y=0 because topView is P3D-source
+        //coordinates relative to centre
+        float relativeX = p.x-c.x;
+        float relativeZ = p.z-c.z;
+        /*
+        //get distance (polar radius)
+        double r = Math.sqrt(relativeX*relativeX + relativeZ*relativeZ);
+        */
+        //"false theta"
+        ftheta = Math.atan(relativeZ/relativeX);
+
+        //for sorting purposes, theta should be relative to pi()/2, increasing clockwise
+        //so far: relative to 0, increasing CC-wise
+        double ctheta = (450-ftheta)%360;
+
+        return ctheta;
+    }
+
+    private ArrayList<P3D> quicksort(ArrayList<P3D> ring, int l, int r)
+    {
+        if (l >= r)
+            return ring;
+
+        //P3D pivot = ring.get(r);
+        double pivot = getPolarCoords(ring.get(0), ring.get(r));
+
+        int left = l;
+        int right = r;
+
+        //for each comparison: calculate polar angle and compare it
+        while (left < right)
+        {
+            /*while(getPolarCoords(ring.get(0), ring.get(left)) < pivot)  //@left<pivot
+                left++;
+
+            while(getPolarCoords(ring.get(0), ring.get(right)) > pivot)  //@right>pivot
+                right--;*/
+
+            while(getPolarCoords(ring.get(0), ring.get(left)) > pivot)  //@left>pivot
+                left++;
+
+            while(getPolarCoords(ring.get(0), ring.get(right)) < pivot)  //@right<pivot
+                right--;
+
+            if (right > left);
+            {
+                Collections.swap(ring, left, right);
+            }
+        }
+
+        quicksort(ring, l, right-1);
+        quicksort(ring, right+1, r);
+
+        return ring;
+    }
 	
 	/*
 	//deprecated, already in 3rdActivity

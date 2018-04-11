@@ -13,22 +13,29 @@
     android:visible="false"
     />
     <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/undo"
+        android:title="rueck"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+    <item
         android:id="@+id/action_rotateX"
-        android:icon="@android:drawable/arrow_up_float"
+        android:icon="@drawable/xachse"
         android:title="@string/menuName"
         app:showAsAction="always"
         android:visible="false"
         />
     <item
         android:id="@+id/action_rotateY"
-        android:icon="@android:drawable/ic_media_next"
+        android:icon="@drawable/yachse"
         android:title="@string/menuName"
         app:showAsAction="always"
         android:visible="false"
         />
     <item
         android:id="@+id/action_rotateZ"
-        android:icon="@android:drawable/btn_star_big_off"
+        android:icon="@drawable/zachse"
         android:title="@string/menuName"
         app:showAsAction="always"
         android:visible="false"
@@ -118,5 +125,102 @@
         android:title="@string/delTri"
         app:showAsAction="never"
         android:visible="false"/>
+
+    <item android:id="@+id/action_reset"
+        android:title="Reset"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_rotate"
+        android:title="Rotieren"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <item android:id="@+id/action_versch"
+        android:title="Verschieben"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <item android:id="@+id/action_zoom"
+        android:title="Zoomen"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <item android:id="@+id/action_textures"
+        android:title="Texturen"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <item android:id="@+id/action_edit"
+        android:title="Bearbeiten"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item
+        android:id="@+id/action_zoomPlus"
+        android:icon="@android:drawable/btn_plus"
+        android:title="Plus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_zoomMinus"
+        android:icon="@android:drawable/btn_minus"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_verschOben"
+        android:icon="@drawable/up"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_verschUnten"
+        android:icon="@drawable/down"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_verschRechts"
+        android:icon="@drawable/right"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_verschLinks"
+        android:icon="@drawable/left"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_fill"
+        android:icon="@android:drawable/btn_star_big_on"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_bild"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:title="Bild"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_hearts"
+        android:icon="@drawable/herz"
+        android:title="Herz"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_stars"
+        android:icon="@drawable/stars"
+        android:title="Sterne"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_transparent"
+        android:icon="@android:drawable/btn_star_big_off"
+        android:title="Transparent"
+        app:showAsAction="always"
+        android:visible="false"/>
+
+
+
+
 
 </menu>

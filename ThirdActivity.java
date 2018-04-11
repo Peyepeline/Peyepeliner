@@ -55,8 +55,16 @@ public class ThirdActivity extends AppCompatActivity {
     private Toolbar customToolbar;
 
     private String pictureImagePath = "";
+    private String bottomViewPath="";
+    private String topViewPath="";
 
     public ArrayList<Tri3D> triangles = new ArrayList<Tri3D>();
+
+    public float verschSide;
+    public float verschTop;
+    public float scale;
+
+    private boolean scaled=false;
 
     //import frontPic and topPic from ImportAndEnterActivity - point to actual objects
     @Override
@@ -89,6 +97,7 @@ public class ThirdActivity extends AppCompatActivity {
                     //Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
                     Bitmap photo2 = decodeScaledBitmap(imgFile2.getAbsolutePath());
                     bottomView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit frontView
+                    bottomViewPath=getIntent().getStringExtra("PfadBild1");
                 }
             }
             if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
@@ -97,6 +106,7 @@ public class ThirdActivity extends AppCompatActivity {
                     //Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
                     Bitmap photo1 = decodeScaledBitmap(imgFile1.getAbsolutePath());
                     topView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit TopView
+                    topViewPath=getIntent().getStringExtra("PfadBild2");
                 }
             }
 
@@ -107,6 +117,7 @@ public class ThirdActivity extends AppCompatActivity {
                     //Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
                     Bitmap photo2 = decodeScaledBitmap(imgFile2.getAbsolutePath());
                     topView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit topView
+                    topViewPath=getIntent().getStringExtra("PfadBild1");
                 }
             }
             if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
@@ -115,6 +126,7 @@ public class ThirdActivity extends AppCompatActivity {
                     //Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
                     Bitmap photo1 = decodeScaledBitmap(imgFile1.getAbsolutePath());
                     bottomView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit frontView
+                    bottomViewPath=getIntent().getStringExtra("PfadBild2");
                 }
             }
         }
@@ -202,11 +214,13 @@ public class ThirdActivity extends AppCompatActivity {
                     p2ForConnect = null;
                     //start connecting-process
                     connectInProgress = true;
+
                     if((extremPtLinks == null) && (extremPtRechts == null)){    //(null, !null) durch if(!connectInProgress) abgefangen
                         Toast.makeText(ThirdActivity.this, "Markiere extremes linkes Punktepaar.", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(ThirdActivity.this, "Markiere extremes rechtes Punktepaar.", Toast.LENGTH_SHORT).show();
                     }
+                    connectButton.setImageResource(R.drawable.done);
                     //Toast.makeText(ThirdActivity.this, "Markiere erstes Punktepaar.", Toast.LENGTH_SHORT).show();
                 }else{
                     //second buttonPressEvent
@@ -241,6 +255,7 @@ public class ThirdActivity extends AppCompatActivity {
                         }
                         //clear connectInProgress state
                         connectInProgress = false;
+                        connectButton.setImageResource(R.drawable.fragezeichen);
                         //if both extreme pts connected cross-View, disable (connect!)-button!
 
                     }else{
@@ -333,6 +348,9 @@ public class ThirdActivity extends AppCompatActivity {
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus){
+        if(scaled){
+            return;
+        }
         super.onWindowFocusChanged(hasFocus);
 
         float neueHoehe = bottomView.getHeight();
@@ -345,6 +363,7 @@ public class ThirdActivity extends AppCompatActivity {
         float verschiebeFactorX;
         float verschiebeFactorY;
 
+
         float bitmapbreite = bottomView.getDrawable().getIntrinsicWidth();
         float bitmaphoehe = bottomView.getDrawable().getIntrinsicHeight();
         float verhaeltnis = bitmaphoehe/bitmapbreite;
@@ -355,13 +374,30 @@ public class ThirdActivity extends AppCompatActivity {
         verschiebeFactorX = (alteBreite-neuebreite)/2;
         verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
 
+        verschSide=verschiebeFactorY;
+        scale=scalefactor;
+
         if(getIntent().getFloatArrayExtra("XPunkte")!=null){
             bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
                     getIntent().getFloatArrayExtra("ZPunkte"), scalefactor, verschiebeFactorX, verschiebeFactorY);
         }
+
+        bitmapbreite = topView.getDrawable().getIntrinsicWidth();
+        bitmaphoehe = topView.getDrawable().getIntrinsicHeight();
+        verhaeltnis = bitmaphoehe/bitmapbreite;
+
+        neuebreite = neueHoehe/verhaeltnis;
+
+        scalefactor = neuebreite/origBreite;
+        verschiebeFactorX = (alteBreite-neuebreite)/2;
+        verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
+
+        verschTop=verschiebeFactorY;
+
         if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
             topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"),scalefactor,verschiebeFactorX,verschiebeFactorY);
         }
+        scaled=true;
     }
 
     @Override
@@ -474,17 +510,21 @@ public class ThirdActivity extends AppCompatActivity {
         //then create ring via dedicated method
         originalRing.clear();
         originalRing = MODEL.getRing(topView.points);
+        triangles();
+        float k2=1/getK(originalRing.get(0));
+        scaleRing(originalRing,k2);
         //originalRing now contains the correctly rotated Ring taken from topView
         //MODEL.getRing(topView.points);
         //0->extremLinks
         //move origRing to extremPktLinks.y and add to MODEL.points
         //---
-        triangles();
+
         P3D extremLinksCopy = new P3D(extremPtLinks.x,extremPtLinks.y,extremPtLinks.z);
         //---
         vector originalVector = new vector(0,extremPtLinks.y,0);
         adjustRingPos(originalRing,originalVector); //geaendert
         MODEL.addPointListToMesh(originalRing);
+
         //---
         for(int i=0;i<triangles.size();i++){
             MODEL.addTriangleToMesh(triangles.get(i));
@@ -502,6 +542,7 @@ public class ThirdActivity extends AppCompatActivity {
         vector RToPoint = new vector(0);
         float halfDistLR = (float)LR.length()/2;
         float k = 0;
+        //scaleRing(originalRing,getK(originalRing.get(0)));
         //for each p left of bisector (dist<0)
         for (P3D p : bottomView.points) {
             //if(calcDistP3DBisector(p) < 0){ //p is LEFT of bisector
@@ -537,6 +578,10 @@ public class ThirdActivity extends AppCompatActivity {
         nextActivity();
     }
 
+    public void sort(){
+        ArrayList<P3D> sortedOriginalRing= new ArrayList<P3D>();
+    }
+
     /*public float getK(P3D p){ // gibt immer k gleich oder fast gleich 1 zureuck
         P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, 0);
         P3D TwoDExtremLinks = new P3D(extremPtLinks.x, extremPtLinks.y, 0);
@@ -552,9 +597,28 @@ public class ThirdActivity extends AppCompatActivity {
     }*/
 
     public float getK(P3D p){
+        /*float min=Float.MAX_VALUE; float max=Float.MIN_VALUE;
+        for(int i=0;i<originalRing.size();i++){
+            if(originalRing.get(i).x<min){
+                min=originalRing.get(i).x;
+            }
+            if(originalRing.get(i).x>max){
+                max=originalRing.get(i).x;
+            }
+        }*/
+        /*float m = (min+max)/2;
+        float XabstandP = Math.abs(p.x-m);
+        float XAbstandExtr = Math.abs(min-m);*/
         float m = (extremPtLinks.x+extremPtRechts.x)/2;
         float XabstandP = Math.abs(p.x-m);
         float XAbstandExtr = Math.abs(extremPtLinks.x-m);
+        //float k1 = XabstandP/XAbstandExtr;
+        /*float laengeEx=Math.abs(extremPtRechts.x-extremPtLinks.x);
+        float laengeOrig=Math.abs(max-min);
+        XabstandP=(laengeOrig/laengeEx)*XabstandP;
+        m = (min+max)/2;
+        XAbstandExtr = m-min;*/
+        //float XAbstandExtr = Math.abs(extremPtLinks.x-m);
         float k = XabstandP/XAbstandExtr;
         return k;
     }
@@ -717,9 +781,27 @@ public class ThirdActivity extends AppCompatActivity {
             indexRing[i]=this.MODEL.points.indexOf(kompletterRing.get(i));
         }
         intent.putExtra("kompletterRing",indexRing);
-
-
+        //TEST:
+        int index=-1;
+        float maxX=originalRing.get(0).x;
+        for(int i=1;i<originalRing.size();i++){
+            if(maxX<originalRing.get(i).x){
+                index=i;
+                maxX=originalRing.get(i).x;
+            }
+        }
+        intent.putExtra("indexExRechts",index);
+        intent.putExtra("bottomView", bottomViewPath);
+        intent.putExtra("topView", topViewPath);
+        intent.putExtra("XPunkte",getIntent().getFloatArrayExtra("XPunkte"));
+        intent.putExtra("YPunkte",getIntent().getFloatArrayExtra("YPunkte"));
+        intent.putExtra("ZPunkte",getIntent().getFloatArrayExtra("ZPunkte"));
+        intent.putExtra("Dreiecke",getIntent().getFloatArrayExtra("Dreiecke"));
+        intent.putExtra("verschSide",verschSide);
+        intent.putExtra("verschTop",verschTop);
+        intent.putExtra("scale",1/scale);
         startActivity(intent);
+        return;
     }
 
     /*public float calcDistP3DBisector(P3D p){    //extremPtLinks, extremPtRechts bekannt

@@ -7,7 +7,7 @@
     <!-- button 1 NEXT ACTIVITY-->
     <item
         android:id="@+id/action_nextActivityFA"
-        android:icon="@android:drawable/btn_plus"
+        android:icon="@drawable/next"
         android:title="@string/menuName"
         app:showAsAction="always"
         android:visible="false"
@@ -15,7 +15,7 @@
 	<!-- buttons for 2ndAct -->
 	<item
         android:id="@+id/action_nextActivitySA"
-        android:icon="@android:drawable/btn_plus"
+        android:icon="@drawable/next"
         android:title="@string/menuName"
         app:showAsAction="always"
         android:visible="false"/>

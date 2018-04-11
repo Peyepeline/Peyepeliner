@@ -48,6 +48,7 @@ class P3D {
         this.z=0;
     }
 
+
 /*    public void setX(float a){
         this.z = a;
     }
@@ -80,6 +81,12 @@ class P3D {
 		this.x = p.x;
 		this.y = p.y;
 	}
+
+    public void set(P3D p){
+        this.x = p.x;
+        this.y = p.y;
+        this.z = p.z;
+    }
 
 	//adds vector (move by vector)
 	public void aV(vector v){

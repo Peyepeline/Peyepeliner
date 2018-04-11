@@ -302,12 +302,16 @@ public class ShapeCanvas extends ImageView {
         if(!canvasTypeTri){
             if(this.selectedPointIndex!=-1) {
                 this.points.remove(this.selectedPoint);
+                setSelectedPoint(null);
+                this.selectedPointIndex=-1;
+                invalidate();
             }
         }
     }
 
     public void deleteEverything(){
         this.points.clear();
+        invalidate();
     }
 
     private Tri3D selectTri(int x, int y){   //interne methode zum auswählen eines dreiecks
@@ -458,6 +462,14 @@ public class ShapeCanvas extends ImageView {
                     break;
 
                 case MotionEvent.ACTION_UP: //was passiert wenn finger von touchoberfläche gehoben? - nix.
+                    //außer:
+                    Tri3D currentTri=this.getFirstTriangle();
+                    if(this.operationID==2){ //falls Punkt sich verschoben hat und zwei Punkte von zwei Dreiecken jetzt nahe zusammen sind
+                        while(currentTri!=null){
+                            connectTri(currentTri);
+                            currentTri=currentTri.getNextTriangle();
+                        }
+                    }
                     invalidate();
                     break;
 

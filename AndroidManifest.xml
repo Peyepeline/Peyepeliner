@@ -51,6 +51,19 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".SecondActivity" />
         </activity>
+
+        <activity android:name=".FourthActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:parentActivityName=".ThirdActivity" >
+            <!-- The meta-data tag is required if you support API level 15 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ThirdActivity" />
+        </activity>
+
+
+
     </application>
 
 </manifest>

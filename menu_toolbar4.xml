@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-->
+        toolbar for FirstActivity and SecondActivity
+    </!-->
+    <!-- button 1 NEXT ACTIVITY-->
+    <item
+    android:id="@+id/action_nextActivityFA"
+    android:icon="@android:drawable/btn_plus"
+    android:title="@string/menuName"
+    app:showAsAction="always"
+    android:visible="false"
+    />
+    <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/undo"
+        android:title="rueck"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+    <item
+        android:id="@+id/action_rotateX"
+        android:icon="@drawable/xachse"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+    <item
+        android:id="@+id/action_rotateY"
+        android:icon="@drawable/yachse"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+    <item
+        android:id="@+id/action_rotateZ"
+        android:icon="@drawable/zachse"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+    <item
+        android:id="@+id/action_XZ"
+        android:icon="@android:drawable/btn_radio"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+
+	<!-- buttons for 2ndAct -->
+	<item
+        android:id="@+id/action_nextActivitySA"
+        android:icon="@android:drawable/btn_plus"
+        android:title="@string/menuName"
+        app:showAsAction="always"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_takePicSA"
+        android:title="@string/takePic"
+        android:icon="@android:drawable/ic_menu_camera"
+        app:showAsAction="always"/>
+
+    <item android:id="@+id/action_rotatePicSA"
+        android:title="@string/rotatePic"
+        android:icon="@android:drawable/ic_menu_rotate"
+        app:showAsAction="always"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_newPointSA"
+        android:title="@string/newPoint"
+        android:icon="@android:drawable/btn_plus"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_selectSA"
+        android:title="@string/select"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_delPointSA"
+        android:title="@string/delPoint"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_delEvSA"
+        android:title="@string/delEv"
+        app:showAsAction="never"
+        android:visible="false"/>
+		
+    <!-- button 2 TAKEPIC-->
+    <item android:id="@+id/action_takePicFA"
+        android:title="@string/takePic"
+        android:icon="@android:drawable/ic_menu_camera"
+        app:showAsAction="always"/>
+    <!-- button 3 ROTATEPIC-->
+    <item android:id="@+id/action_rotatePicFA"
+        android:title="@string/rotatePic"
+        android:icon="@android:drawable/ic_menu_rotate"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <!-- button 4 MKTRI-->
+    <item android:id="@+id/action_newTriFA"
+        android:title="@string/makeTri"
+        android:icon="@android:drawable/btn_plus"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <!-- button 5 MOVEPT-->
+    <item android:id="@+id/action_movePtFA"
+        android:title="@string/movePoint"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <!-- button 6 SELECTPT-->
+    <item android:id="@+id/action_selectPtFA"
+        android:title="@string/selectPt"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <!-- button 7 SELECTTRI-->
+    <item android:id="@+id/action_selectTriFA"
+        android:title="@string/selectTri"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <!-- button 8 DELTRI-->
+    <item android:id="@+id/action_delTriFA"
+        android:title="@string/delTri"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_reset"
+        android:title="Reset"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item android:id="@+id/action_rotate"
+        android:title="Rotieren"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <item android:id="@+id/action_versch"
+        android:title="Verschieben"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <item android:id="@+id/action_zoom"
+        android:title="Zoomen"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <item android:id="@+id/action_textures"
+        android:title="Texturen"
+        app:showAsAction="never"
+        android:visible="false"/>
+    <item android:id="@+id/action_edit"
+        android:title="Bearbeiten"
+        app:showAsAction="never"
+        android:visible="false"/>
+
+    <item
+        android:id="@+id/action_zoomPlus"
+        android:icon="@android:drawable/btn_plus"
+        android:title="Plus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_zoomMinus"
+        android:icon="@android:drawable/btn_minus"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_verschOben"
+        android:icon="@drawable/up"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_verschUnten"
+        android:icon="@drawable/down"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_verschRechts"
+        android:icon="@drawable/right"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_verschLinks"
+        android:icon="@drawable/left"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_fill"
+        android:icon="@android:drawable/btn_star_big_on"
+        android:title="Minus"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_bild"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:title="Bild"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_hearts"
+        android:icon="@drawable/herz"
+        android:title="Herz"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_stars"
+        android:icon="@drawable/stars"
+        android:title="Sterne"
+        app:showAsAction="always"
+        android:visible="false"/>
+    <item
+        android:id="@+id/action_transparent"
+        android:icon="@android:drawable/btn_star_big_off"
+        android:title="Transparent"
+        app:showAsAction="always"
+        android:visible="false"/>
+
+
+
+
+
+</menu>

@@ -34,11 +34,14 @@ public class ThirdActivity extends AppCompatActivity {
 
     //deprecated? call topView.populatePointList() and use topView.points
     //TODO - change data type to P3D - done.
-    public ArrayList<P3D> points3D = new ArrayList<P3D>(); //P3D-liste mit punkten (3-koord.) für modell
+    public ArrayList<P3D> points3D = new ArrayList<P3D>(); //P3D-liste mit punkten
+    //WIRD NUR FÜR ERFASSUNG VON extremPtLinks/extremPktRechts GENUTZT!
     public ArrayList<P3D> originalRing = new ArrayList<P3D>();
     private int currIndex = 0;  //first existing point
+    public Model3D MODEL = new Model3D();   //empty model to be built stepwise
 
     private ImageButton connectButton;
+    private ImageButton createRingsFromViews;
     private boolean connectInProgress = false;
     //TODO - make those 2 pts selectable...
     private P3D p1ForConnect;
@@ -52,6 +55,16 @@ public class ThirdActivity extends AppCompatActivity {
     private Toolbar customToolbar;
 
     private String pictureImagePath = "";
+    private String bottomViewPath="";
+    private String topViewPath="";
+
+    public ArrayList<Tri3D> triangles = new ArrayList<Tri3D>();
+
+    public float verschSide;
+    public float verschTop;
+    public float scale;
+
+    private boolean scaled=false;
 
     //import frontPic and topPic from ImportAndEnterActivity - point to actual objects
     @Override
@@ -84,6 +97,7 @@ public class ThirdActivity extends AppCompatActivity {
                     //Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
                     Bitmap photo2 = decodeScaledBitmap(imgFile2.getAbsolutePath());
                     bottomView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit frontView
+                    bottomViewPath=getIntent().getStringExtra("PfadBild1");
                 }
             }
             if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
@@ -92,6 +106,7 @@ public class ThirdActivity extends AppCompatActivity {
                     //Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
                     Bitmap photo1 = decodeScaledBitmap(imgFile1.getAbsolutePath());
                     topView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit TopView
+                    topViewPath=getIntent().getStringExtra("PfadBild2");
                 }
             }
 
@@ -102,6 +117,7 @@ public class ThirdActivity extends AppCompatActivity {
                     //Bitmap photo2 = BitmapFactory.decodeFile(imgFile2.getAbsolutePath());
                     Bitmap photo2 = decodeScaledBitmap(imgFile2.getAbsolutePath());
                     topView.setImageBitmap(photo2); //Verknuepfe erstes Bild mit topView
+                    topViewPath=getIntent().getStringExtra("PfadBild1");
                 }
             }
             if(getIntent().getStringExtra("PfadBild2")!=null) { //Test
@@ -110,6 +126,7 @@ public class ThirdActivity extends AppCompatActivity {
                     //Bitmap photo1 = BitmapFactory.decodeFile(imgFile1.getAbsolutePath());
                     Bitmap photo1 = decodeScaledBitmap(imgFile1.getAbsolutePath());
                     bottomView.setImageBitmap(photo1); //Verknuepfe zweites Bild mit frontView
+                    bottomViewPath=getIntent().getStringExtra("PfadBild2");
                 }
             }
         }
@@ -122,17 +139,6 @@ public class ThirdActivity extends AppCompatActivity {
                     getIntent().getFloatArrayExtra("ZPunkte"));
         }*/
 
-        //TODO - get RingPath from topView
-        //first populate point list
-        topView.populatePointList();
-        //then create 3-D-Point-List corresponding to it
-        points3D.clear();
-        originalRing.clear();   //later: fill and use for scaled ring data (modell rotationskörper)
-        //fill RingList
-        //topView(x)=reality(x), topView(y)=reality(z), reality(y) not in topView
-        for (P3D pointInTV : topView.points) {
-            points3D.add(new P3D(pointInTV.x, 0, pointInTV.y));
-        }
         //TODO - points3D: fill in missing y-data (calculate via bottomView)
 		/*
         for (PointF pointInTV : topView.points) {
@@ -170,10 +176,34 @@ public class ThirdActivity extends AppCompatActivity {
             }
         });
 
+        createRingsFromViews = (ImageButton) findViewById(R.id.createRingsFromViewsButtonTA);
+        createRingsFromViews.setEnabled(false);
+        createRingsFromViews.setClickable(false);
+        createRingsFromViews.setAlpha(.5f);
+        createRingsFromViews.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if((extremPtLinks != null) && (extremPtRechts != null)){
+                    //necessary pts for RMR() are set. proceed!
+                    RMR();
+                }else{
+                    //error. first set extremPtLinks, extremPtRechts
+                    Toast.makeText(ThirdActivity.this, "ERST UEBEREINSTIMMENDE PUNKTE MARKIEREN!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         connectButton = (ImageButton) findViewById(R.id.connectButtonTA);
         connectButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
+                if(points3D.isEmpty()){
+                    for(P3D pT : topView.points){
+                        //adds (0,0,pT.y) to points3D
+                        //x,y are determined by bottomView
+                        points3D.add(new P3D(pT.y));
+                    }
+                }
                 //TODO - onClickEvent? - s.u.
                 if(!connectInProgress){
                     //first buttonPressEvent
@@ -184,11 +214,13 @@ public class ThirdActivity extends AppCompatActivity {
                     p2ForConnect = null;
                     //start connecting-process
                     connectInProgress = true;
+
                     if((extremPtLinks == null) && (extremPtRechts == null)){    //(null, !null) durch if(!connectInProgress) abgefangen
                         Toast.makeText(ThirdActivity.this, "Markiere extremes linkes Punktepaar.", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(ThirdActivity.this, "Markiere extremes rechtes Punktepaar.", Toast.LENGTH_SHORT).show();
                     }
+                    connectButton.setImageResource(R.drawable.done);
                     //Toast.makeText(ThirdActivity.this, "Markiere erstes Punktepaar.", Toast.LENGTH_SHORT).show();
                 }else{
                     //second buttonPressEvent
@@ -200,24 +232,32 @@ public class ThirdActivity extends AppCompatActivity {
                         //1 pkt each selected: continue!
                         //in points3D: fill in missing y-coord. of point
                         for (P3D pointInPoints3D : points3D) {
-                            //find corresponding point to p1ForConnect in points3D
-                            if((pointInPoints3D.x == p1ForConnect.x) && (pointInPoints3D.z == p1ForConnect.y)) {
-                                //fill in y-coord.
+                            //find corresponding point to p1ForConnect(topView) in points3D
+                            //if((pointInPoints3D.x == p1ForConnect.x) && (pointInPoints3D.z == p1ForConnect.y)) {
+                            if(pointInPoints3D.z == p1ForConnect.y){
+                                //fill in x and y from bottomView
+                                pointInPoints3D.x = p2ForConnect.x;
                                 pointInPoints3D.y = p2ForConnect.y;
                                 //TODO - is this byReference or byValue???
                                 if(extremPtLinks == null){
                                     extremPtLinks = pointInPoints3D;
                                 }else{
                                     extremPtRechts = pointInPoints3D;
+                                    connectButton.setEnabled(false);
+                                    connectButton.setClickable(false);
+                                    connectButton.setAlpha(.5f);
+                                    //if both extremPktLinks, extremPktRechts are set, enable button for the automatic creation of rings
+                                    createRingsFromViews.setEnabled(true);
+                                    createRingsFromViews.setClickable(true);
+                                    createRingsFromViews.setAlpha(.5f);
                                 }
                             }
                         }
                         //clear connectInProgress state
                         connectInProgress = false;
+                        connectButton.setImageResource(R.drawable.fragezeichen);
                         //if both extreme pts connected cross-View, disable (connect!)-button!
-                        connectButton.setEnabled(false);
-                        connectButton.setClickable(false);
-                        connectButton.setAlpha(.5f);
+
                     }else{
                         //error: select 1 pkt each!
                         Toast.makeText(ThirdActivity.this, "Je 1 Punkt muss markiert sein!", Toast.LENGTH_LONG).show();
@@ -308,6 +348,9 @@ public class ThirdActivity extends AppCompatActivity {
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus){
+        if(scaled){
+            return;
+        }
         super.onWindowFocusChanged(hasFocus);
 
         float neueHoehe = bottomView.getHeight();
@@ -320,6 +363,7 @@ public class ThirdActivity extends AppCompatActivity {
         float verschiebeFactorX;
         float verschiebeFactorY;
 
+
         float bitmapbreite = bottomView.getDrawable().getIntrinsicWidth();
         float bitmaphoehe = bottomView.getDrawable().getIntrinsicHeight();
         float verhaeltnis = bitmaphoehe/bitmapbreite;
@@ -330,13 +374,30 @@ public class ThirdActivity extends AppCompatActivity {
         verschiebeFactorX = (alteBreite-neuebreite)/2;
         verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
 
+        verschSide=verschiebeFactorY;
+        scale=scalefactor;
+
         if(getIntent().getFloatArrayExtra("XPunkte")!=null){
             bottomView.rebuildFormerPoints(getIntent().getFloatArrayExtra("XPunkte"),getIntent().getFloatArrayExtra("YPunkte"),
                     getIntent().getFloatArrayExtra("ZPunkte"), scalefactor, verschiebeFactorX, verschiebeFactorY);
         }
+
+        bitmapbreite = topView.getDrawable().getIntrinsicWidth();
+        bitmaphoehe = topView.getDrawable().getIntrinsicHeight();
+        verhaeltnis = bitmaphoehe/bitmapbreite;
+
+        neuebreite = neueHoehe/verhaeltnis;
+
+        scalefactor = neuebreite/origBreite;
+        verschiebeFactorX = (alteBreite-neuebreite)/2;
+        verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
+
+        verschTop=verschiebeFactorY;
+
         if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
             topView.rebuildFormerTriangles(getIntent().getFloatArrayExtra("Dreiecke"),scalefactor,verschiebeFactorX,verschiebeFactorY);
         }
+        scaled=true;
     }
 
     @Override
@@ -436,6 +497,382 @@ public class ThirdActivity extends AppCompatActivity {
         currentTVPoint.setYValue(currentFVPoint.y);
     }
     */
+
+    //case 0: TV only contains 1 ring (no spike.)
+    //ergo
+    public void RMR(){//called to create rings based on topView, bottomView, extremPktLinks, extremPktRechts
+        //@init: clear ring data
+        //==================================================
+        //FIRST:
+        // create RING
+        //first populate point list
+        topView.populatePointList();
+        //then create ring via dedicated method
+        originalRing.clear();
+        originalRing = MODEL.getRing(topView.points);
+        triangles();
+        float k2=1/getK(originalRing.get(0));
+        scaleRing(originalRing,k2);
+        //originalRing now contains the correctly rotated Ring taken from topView
+        //MODEL.getRing(topView.points);
+        //0->extremLinks
+        //move origRing to extremPktLinks.y and add to MODEL.points
+        //---
+
+        P3D extremLinksCopy = new P3D(extremPtLinks.x,extremPtLinks.y,extremPtLinks.z);
+        //---
+        vector originalVector = new vector(0,extremPtLinks.y,0);
+        adjustRingPos(originalRing,originalVector); //geaendert
+        MODEL.addPointListToMesh(originalRing);
+
+        //---
+        for(int i=0;i<triangles.size();i++){
+            MODEL.addTriangleToMesh(triangles.get(i));
+        }
+        //---
+        //==================================================
+        //SECOND:
+        //=======================edited===========================
+        //USE BOTTOMVIEW-PROJECTIONS FOR CALCULATIONS!
+        P3D bottomViewLinks = new P3D(extremPtLinks.x, extremPtLinks.y);
+        P3D bottomViewRechts = new P3D(extremPtRechts.x, extremPtRechts.y);
+        vector LR = new vector(bottomViewLinks, bottomViewRechts);
+        //=======================edited===========================
+        vector LToPoint = new vector(0);
+        vector RToPoint = new vector(0);
+        float halfDistLR = (float)LR.length()/2;
+        float k = 0;
+        //scaleRing(originalRing,getK(originalRing.get(0)));
+        //for each p left of bisector (dist<0)
+        for (P3D p : bottomView.points) {
+            //if(calcDistP3DBisector(p) < 0){ //p is LEFT of bisector
+            //=======================edited===========================
+            LToPoint.setVector(bottomViewLinks, p);
+            RToPoint.setVector(bottomViewRechts, p);
+            //=======================edited===========================
+            if(LToPoint.length() < RToPoint.length()&&(!(p.x==extremLinksCopy.x&&p.y==extremLinksCopy.y))/*&&(!p.compare(extremPtRechts))*/){
+                //QUATSCH: use dreiecksungleichung!
+                //for this point, create new ring, scale it, and move it to have newRing(0) coincide with the point p
+                //newRing = clone of originalRing
+                ArrayList<P3D> newRing = new ArrayList<P3D>();
+                newRing.clear();
+                for(P3D point : originalRing){
+                    newRing.add(new P3D(point));
+                }
+                //calculate skalar k
+                //k = Math.abs(calcDistP3DBisector(p))/halfDistLR;
+                k=getK(p);
+                //scale newRing
+                scaleRing(newRing, k);
+
+                //adjustPos newRing
+                newRing=adjustRingPos(newRing, p);
+                //add points of newRing to MODEL
+                MODEL.addPointListToMesh(newRing);
+            }
+        }
+        //==================================================
+        //THIRD:
+        //add spikes
+        //TODO - implement
+        nextActivity();
+    }
+
+    public void sort(){
+        ArrayList<P3D> sortedOriginalRing= new ArrayList<P3D>();
+    }
+
+    /*public float getK(P3D p){ // gibt immer k gleich oder fast gleich 1 zureuck
+        P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, 0);
+        P3D TwoDExtremLinks = new P3D(extremPtLinks.x, extremPtLinks.y, 0);
+        vector LinksM = new vector(m, TwoDExtremLinks);
+        double laengeLinksM = LinksM.length();
+        P3D TwoDP = new P3D(p.x,p.y,0);
+        vector ExLinksp = new vector(TwoDExtremLinks, TwoDP);
+        P3D mStrich = new P3D(m.x+ExLinksp.x, m.y+ExLinksp.y,0);
+        vector pMStrich = new vector(TwoDP, mStrich);
+        double laengepMStrich = pMStrich.length();
+        float k = (float) (laengepMStrich/laengeLinksM);
+        return k;
+    }*/
+
+    public float getK(P3D p){
+        /*float min=Float.MAX_VALUE; float max=Float.MIN_VALUE;
+        for(int i=0;i<originalRing.size();i++){
+            if(originalRing.get(i).x<min){
+                min=originalRing.get(i).x;
+            }
+            if(originalRing.get(i).x>max){
+                max=originalRing.get(i).x;
+            }
+        }*/
+        /*float m = (min+max)/2;
+        float XabstandP = Math.abs(p.x-m);
+        float XAbstandExtr = Math.abs(min-m);*/
+        float m = (extremPtLinks.x+extremPtRechts.x)/2;
+        float XabstandP = Math.abs(p.x-m);
+        float XAbstandExtr = Math.abs(extremPtLinks.x-m);
+        //float k1 = XabstandP/XAbstandExtr;
+        /*float laengeEx=Math.abs(extremPtRechts.x-extremPtLinks.x);
+        float laengeOrig=Math.abs(max-min);
+        XabstandP=(laengeOrig/laengeEx)*XabstandP;
+        m = (min+max)/2;
+        XAbstandExtr = m-min;*/
+        //float XAbstandExtr = Math.abs(extremPtLinks.x-m);
+        float k = XabstandP/XAbstandExtr;
+        return k;
+    }
+
+    public void triangles(){
+        try {
+            Tri3D currentTri = topView.getFirstTriangle();
+            int index0=0;
+            int index1=0;
+            int index2=0;
+            while (currentTri != null) {
+                P3D p0 = new P3D(currentTri.getp0().x, 0, currentTri.getp0().y);
+                P3D p1 = new P3D(currentTri.getp1().x, 0, currentTri.getp1().y);
+                P3D p2 = new P3D(currentTri.getp2().x, 0, currentTri.getp2().y);
+                for(int i=0;i<originalRing.size();i++){
+                    if(originalRing.get(i).compare(p0)){
+                        index0 = i;
+                    }
+                    if(originalRing.get(i).compare(p1)){
+                        index1 = i;
+                    }
+                    if(originalRing.get(i).compare(p2)){
+                       index2 = i;
+                    }
+                }
+                triangles.add(new Tri3D(originalRing.get(index0), originalRing.get(index1), originalRing.get(index2)));
+                currentTri =currentTri.getNextTriangle();
+            }
+        }catch (NullPointerException e){
+            Toast.makeText(ThirdActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
+        }catch (IndexOutOfBoundsException e){
+            Toast.makeText(ThirdActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    //case 0: TV only contains 1 ring (no spike.)
+    //ergo
+    /*public void RMR(){//called to create rings based on topView, bottomView, extremPktLinks, extremPktRechts
+        //@init: clear ring data
+        //==================================================
+        //FIRST:
+        // create RING
+        //first populate point list
+        topView.populatePointList();
+        //then create ring via dedicated method
+        originalRing.clear();
+        originalRing = MODEL.getRing(topView.points);
+        //originalRing now contains the correctly rotated Ring taken from topView
+        //MODEL.getRing(topView.points);
+        //0->extremLinks
+        //move origRing to extremPktLinks.y and add to MODEL.points
+        vector originalVector = new vector(0,extremPtLinks.y,0);
+        adjustRingPos(originalRing,originalVector);
+        MODEL.addPointListToMesh(originalRing);
+        //==================================================
+        //SECOND:
+        vector LR = new vector(extremPtLinks, extremPtRechts);
+        vector LToPoint = new vector(0);
+        vector RToPoint = new vector(0);
+        float halfDistLR = (float)LR.length()/2;
+        float k = 0;
+        //for each p left of bisector (dist<0)
+        for (P3D p : bottomView.points) {
+            //if(calcDistP3DBisector(p) < 0){ //p is LEFT of bisector
+            LToPoint.setVector(extremPtLinks, p);
+            RToPoint.setVector(extremPtRechts, p);
+            if(LToPoint.length() < RToPoint.length()&&(!p.compare(extremPtLinks))&&(!p.compare(extremPtRechts))){
+                //QUATSCH: use dreiecksungleichung!
+                //for this point, create new ring, scale it, and move it to have newRing(0) coincide with the point p
+                //newRing = clone of originalRing
+                ArrayList<P3D> newRing = new ArrayList<P3D>();
+                newRing.clear();
+                for(P3D point : originalRing){
+                    newRing.add(new P3D(point));
+                }
+                //calculate skalar k
+                k = Math.abs(calcDistP3DBisector(p))/halfDistLR;
+
+                //scale newRing
+                scaleRing(newRing, k);
+
+                //adjustPos newRing
+                newRing=adjustRingPos(newRing, p);
+                //add points of newRing to MODEL
+                MODEL.addPointListToMesh(newRing);
+            }
+        }
+        //==================================================
+        //THIRD:
+        //add spikes
+        //TODO - implement
+        nextActivity();
+    }*/
+
+    public boolean test(P3D p){
+        boolean isLinks = (extremPtLinks.x==p.x)&&(extremPtLinks.y==p.y);
+        boolean isRechts= (extremPtRechts.x==p.x)&&(extremPtLinks.y==p.y);
+        if(isLinks||isRechts){
+            return false;
+        }
+        float neuX = (extremPtLinks.x+extremPtRechts.x)/2;
+        float wert = neuX-p.x;
+        if(wert>0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public void nextActivity(){
+        ArrayList<P3D> kompletterRing = new ArrayList<P3D>();
+        for(int i=0;i<MODEL.points.size();i++){
+            kompletterRing.add(MODEL.points.get(i));
+        }
+
+        /*topView.populatePointList();
+        MODEL.addPointListToMesh(topView.points);*/
+
+        /*Tri3D currentTriangle = topView.getFirstTriangle();
+        while(currentTriangle!=null){
+            MODEL.addTriangleToMesh(currentTriangle);
+            currentTriangle=currentTriangle.getNextTriangle();
+        }*/
+
+        Intent intent = new Intent(getApplicationContext(), FourthActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        int anzahlPunkte=this.MODEL.points.size();
+        float[] x = new float[anzahlPunkte];
+        float[] y = new float[anzahlPunkte];
+        float[] z = new float[anzahlPunkte];
+        for(int i=0;i<anzahlPunkte;i++){
+            x[i]=this.MODEL.points.get(i).x;
+            y[i]=this.MODEL.points.get(i).y;
+            z[i]=this.MODEL.points.get(i).z;
+        }
+        intent.putExtra("x",x); //xPunkte aller Punkte
+        intent.putExtra("y",y); //yPunkte aller Punkte
+        intent.putExtra("z",z); //zPunkte aller Punkte
+
+        int anzahlDreiecke = this.MODEL.triangles.size();
+        int[] indexTrianglep0 = new int[anzahlDreiecke]; //Index von p0 des i-ten Dreiecks in Punkte Liste
+        int[] indexTrianglep1 = new int[anzahlDreiecke]; // " p1 "
+        int[] indexTrianglep2 = new int[anzahlDreiecke]; // " p2 "
+        for(int i=0;i<anzahlDreiecke;i++){
+            indexTrianglep0[i]= this.MODEL.points.indexOf(this.MODEL.triangles.get(i).getp0());
+            indexTrianglep1[i]= this.MODEL.points.indexOf(this.MODEL.triangles.get(i).getp1());
+            indexTrianglep2[i]= this.MODEL.points.indexOf(this.MODEL.triangles.get(i).getp2());
+        }
+        intent.putExtra("p0", indexTrianglep0);
+        intent.putExtra("p1", indexTrianglep1);
+        intent.putExtra("p2", indexTrianglep2);
+
+        int allePunkteImRing = kompletterRing.size();
+        intent.putExtra("allePunkteImRing", allePunkteImRing);
+        intent.putExtra("anzahlPunkteImRing", originalRing.size());
+        intent.putExtra("anzahlRinge", allePunkteImRing/originalRing.size());
+
+        int[] indexRing = new int[allePunkteImRing];
+        for(int i=0;i<allePunkteImRing;i++){
+            indexRing[i]=this.MODEL.points.indexOf(kompletterRing.get(i));
+        }
+        intent.putExtra("kompletterRing",indexRing);
+        //TEST:
+        int index=-1;
+        float maxX=originalRing.get(0).x;
+        for(int i=1;i<originalRing.size();i++){
+            if(maxX<originalRing.get(i).x){
+                index=i;
+                maxX=originalRing.get(i).x;
+            }
+        }
+        intent.putExtra("indexExRechts",index);
+        intent.putExtra("bottomView", bottomViewPath);
+        intent.putExtra("topView", topViewPath);
+        intent.putExtra("XPunkte",getIntent().getFloatArrayExtra("XPunkte"));
+        intent.putExtra("YPunkte",getIntent().getFloatArrayExtra("YPunkte"));
+        intent.putExtra("ZPunkte",getIntent().getFloatArrayExtra("ZPunkte"));
+        intent.putExtra("Dreiecke",getIntent().getFloatArrayExtra("Dreiecke"));
+        intent.putExtra("verschSide",verschSide);
+        intent.putExtra("verschTop",verschTop);
+        intent.putExtra("scale",1/scale);
+        startActivity(intent);
+        return;
+    }
+
+    /*public float calcDistP3DBisector(P3D p){    //extremPtLinks, extremPtRechts bekannt
+        //get mid(extremPtLinks, extremPtRechts) (SIDEVIEW ONLY!)
+        P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, (extremPtLinks.z+extremPtRechts.z)/2);
+        vector Lm = new vector(extremPtLinks, m);
+        vector Lp = new vector(extremPtLinks, p);
+        vector pLm = new vector(-Lm.y, Lm.x, 0); //vector @rightAngle(Lm)
+        double phi = pLm.angle(Lp);    //TODO - formula for angle between 2 vectors - done.
+        //TODO - implement vector.length() - done.
+        double dist = (Lp.length() * Math.sin(phi)) - Lm.length();  //umgedreht
+        return (float)dist;
+    }*/
+
+    public float calcDistP3DBisector(P3D p){    //extremPtLinks, extremPtRechts bekannt
+        //get mid(extremPtLinks, extremPtRechts) (SIDEVIEW ONLY!)
+        //=======================edited===========================
+        P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, 0);
+        //=======================edited===========================
+        vector Lm = new vector(extremPtLinks, m);
+        vector Lp = new vector(extremPtLinks, p);
+        vector pLm = new vector(-Lm.y, Lm.x, 0); //vector @rightAngle(Lm)
+        double phi = pLm.angle(Lp);    //TODO - formula for angle between 2 vectors - done.
+        //TODO - implement vector.length() - done.
+        double dist = (Lp.length() * Math.sin(phi)) - Lm.length();  //umgedreht
+        return (float)dist;
+    }
+
+
+    public void scaleRing(ArrayList<P3D> ring, float skalar){ //p (TV) in ring has x,y, BUT is (x,z) IRL
+        //get c
+        float cX = 0;
+        float cY = 0;
+        float cZ = 0;
+        int nbPts = ring.size();
+        for(P3D p : ring){
+            cX += p.x;
+            cY += p.y;
+            cZ += p.z;
+        }
+        cX = cX/nbPts;
+        cY = cY/nbPts;
+        cZ = cZ/nbPts;
+        P3D c = new P3D(cX, cY, cZ);
+        //scale around c
+        //use vector v
+        vector v = new vector(0, 0, 0);
+        for(P3D p : ring){
+            v.setVector(c, p);  //c->p
+            v.scaleVector(skalar);
+            p.x = c.x + v.x;
+            p.y = c.y + v.y;
+            p.z = c.z + v.z;
+        }
+    }
+
+    //überladen für Nutzung mit vector und P3D
+    public ArrayList<P3D> adjustRingPos(ArrayList<P3D> scaledRing, P3D p){
+        //moves (freshly rescaled) Ring for coincidence [pt0Original|pt0Rescaled]
+        vector v = new vector(scaledRing.get(0), p);
+        for(P3D pointInRing : scaledRing){
+            pointInRing.aV(v);
+        }
+        return scaledRing;
+    }
+    public ArrayList<P3D> adjustRingPos(ArrayList<P3D> scaledRing, vector v){
+        for(P3D pointInRing : scaledRing){
+            pointInRing.aV(v);
+        }
+        return scaledRing;
+    }
 
 }
 

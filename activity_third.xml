@@ -53,7 +53,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:src="@android:drawable/ic_menu_add" />
+            android:src="@drawable/fragezeichen" />
+
+        <ImageButton
+            android:id="@+id/createRingsFromViewsButtonTA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:src="@drawable/alldone" />
+
 
     </LinearLayout>
     <com.example.core.peyepeliner.ShapeCanvas

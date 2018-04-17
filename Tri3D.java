@@ -155,6 +155,21 @@ class Tri3D {
         }
     }
 
+    public void connect2(Tri3D tri2){
+        //for each point in "this" find closest point in "tri2"
+        //for this.p0 find closest point in tri2. if abstand is under 50, set this.p0 to tri2.closestpt
+        //tri2.getPointToAdjust(this.p0) gets point in tri2 closest to p0
+        if(abstand(this.getp0(), tri2.getPointToAdjust(this.getp0().getPointF()))<1){
+            this.setp0(tri2.getPointToAdjust(this.getp0().getPointF()));
+        }
+        if(abstand(this.getp1(), tri2.getPointToAdjust(this.getp1().getPointF()))<1){
+            this.setp1(tri2.getPointToAdjust(this.getp1().getPointF()));
+        }
+        if(abstand(this.getp2(), tri2.getPointToAdjust(this.getp2().getPointF()))<1){
+            this.setp2(tri2.getPointToAdjust(this.getp2().getPointF()));
+        }
+    }
+
     //////////////////////////////////////////////////
     /*
     public boolean checkMove(PointF pos, PointF next, Triangle tri2){

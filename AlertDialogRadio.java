@@ -14,14 +14,16 @@ import android.widget.Toast;
  */
 
 public class AlertDialogRadio  extends DialogFragment {
-
+    boolean dialogUse = true;  //could use int for more options, but since only 2 of these are used...
+    //dialogUse = true for perspective choice, = false for peaks choice
     boolean testB = true;
     final CharSequence[] canvasTypes = {" Top View ", " Side View "};
+    final CharSequence[] peakTypes = {" flat top and bottom ", " peak on top ", " peak on top and bottom "};
     /** Declaring the interface, to invoke a callback function in the implementing activity class */
     AlertPositiveListener alertPositiveListener;
     /** An interface to be implemented in the hosting activity for "OK" button click listener */
     interface AlertPositiveListener {
-        public void onPositiveClick(int position);
+        public void onPositiveClick(boolean dialogType, int position);
     }
     /** This is a callback method executed when this fragment is attached to an activity.
      *  This function ensures that, the hosting activity implements the interface AlertPositiveListener
@@ -44,7 +46,7 @@ public class AlertDialogRadio  extends DialogFragment {
         public void onClick(DialogInterface dialog, int which) {
             AlertDialog alert = (AlertDialog)dialog;
             int position = alert.getListView().getCheckedItemPosition();
-            alertPositiveListener.onPositiveClick(position);
+            alertPositiveListener.onPositiveClick(dialogUse, position);
         }
     };
     /** Listener for choice feedback */
@@ -53,28 +55,34 @@ public class AlertDialogRadio  extends DialogFragment {
         public void onClick(DialogInterface dialog, int which) {
             AlertDialog alert = (AlertDialog)dialog;
             int position = alert.getListView().getCheckedItemPosition();
-            if((position == 0) && FirstActivity.importedPhoto.canvasTypeTri){
-                //what to do if choice not possible?
-                Toast.makeText(getActivity(), " DO NOT CHANGE THE CHOICE GOD MADE FOR YOU! ", Toast.LENGTH_LONG).show();
-                testB = false;
-                alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
-            }
-            if((position == 1) && !FirstActivity.importedPhoto.canvasTypeTri){
-                //what to do if choice not possible?
-                Toast.makeText(getActivity(), " DO NOT CHANGE THE CHOICE GOD MADE FOR YOU! ", Toast.LENGTH_LONG).show();
-                testB = false;
-                alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
-            }
-            if((position == 0) && !FirstActivity.importedPhoto.canvasTypeTri){
-                //what to do if choice possible?
+            if(dialogUse){  //case: perspective choice
+                if((position == 0) && FirstActivity.importedPhoto.canvasTypeTri){
+                    //what to do if choice not possible?
+                    Toast.makeText(getActivity(), " DO NOT CHANGE THE CHOICE GOD MADE FOR YOU! ", Toast.LENGTH_LONG).show();
+                    testB = false;
+                    alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
+                }
+                if((position == 1) && !FirstActivity.importedPhoto.canvasTypeTri){
+                    //what to do if choice not possible?
+                    Toast.makeText(getActivity(), " DO NOT CHANGE THE CHOICE GOD MADE FOR YOU! ", Toast.LENGTH_LONG).show();
+                    testB = false;
+                    alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
+                }
+                if((position == 0) && !FirstActivity.importedPhoto.canvasTypeTri){
+                    //what to do if choice possible?
+                    testB = true;
+                    alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
+                }
+                if((position == 1) && FirstActivity.importedPhoto.canvasTypeTri){
+                    //what to do if choice possible?
+                    testB = true;
+                    alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
+                }
+            }else{  //case: peaks choice ... "ok"-button always enabled
                 testB = true;
                 alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
             }
-            if((position == 1) && FirstActivity.importedPhoto.canvasTypeTri){
-                //what to do if choice possible?
-                testB = true;
-                alert.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(testB);
-            }
+
         }
     };
     /** This is a callback method which will be executed
@@ -92,19 +100,26 @@ public class AlertDialogRadio  extends DialogFragment {
         /** Setting items to the alert dialog */
         /** Second argument states default selection */
         //dBuilder.setSingleChoiceItems(canvasTypes, position, null);
-        if(FirstActivity.isPicTaken()){
-            if(FirstActivity.importedPhoto.canvasTypeTri){
-                dBuilder.setTitle("Pick the Perspective (Top View already taken!):");
-                dBuilder.setSingleChoiceItems(canvasTypes, 1, itemSelectListener);
+        if(dialogUse){
+            if(FirstActivity.isPicTaken()){
+                if(FirstActivity.importedPhoto.canvasTypeTri){
+                    dBuilder.setTitle("Pick the Perspective (Top View already taken!):");
+                    dBuilder.setSingleChoiceItems(canvasTypes, 1, itemSelectListener);
+                }else{
+                    dBuilder.setTitle("Pick the Perspective (Side View already taken!):");
+                    dBuilder.setSingleChoiceItems(canvasTypes, 0, itemSelectListener);
+                }
             }else{
-                dBuilder.setTitle("Pick the Perspective (Side View already taken!):");
-                dBuilder.setSingleChoiceItems(canvasTypes, 0, itemSelectListener);
+                testB = true;
+                dBuilder.setTitle("Pick the Perspective:");
+                dBuilder.setSingleChoiceItems(canvasTypes, 0, null);
             }
         }else{
             testB = true;
-            dBuilder.setTitle("Pick the Perspective:");
-            dBuilder.setSingleChoiceItems(canvasTypes, 0, null);
+            dBuilder.setTitle("Pick general shape of object:");
+            dBuilder.setSingleChoiceItems(peakTypes, 0, null);
         }
+
         /** Setting a positive button and its listener */
         dBuilder.setNeutralButton("OK",positiveListener);
         /** Setting a negative button and its listener */

@@ -25,6 +25,7 @@ import com.example.core.peyepeliner.AlertDialogRadio.AlertPositiveListener;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.lang.Math;
 
 //import android.view.MenuItem;
 //import android.widget.ImageButton;
@@ -54,7 +55,9 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
     public boolean isScaled=false;
     public boolean textures=false;
     public boolean edit=true;
-    public int IndexExRechts;
+    public int IndexRechts;
+
+
 
     //private ImageView figure;  //now in customized ShapeCanvas-class
 
@@ -86,25 +89,40 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
             }
         });
 
-        achsenObjekt = (ImageCanvas) findViewById(R.id.axisCanvas); //hier wird das achsenobj. gerendert
-        achsenObjekt.initCPaint();
-        createAxisObject();
+        try {
+            achsenObjekt = (ImageCanvas) findViewById(R.id.axisCanvas); //hier wird das achsenobj. gerendert
+            achsenObjekt.initCPaint();
+            createAxisObject();
+        }catch(NullPointerException e){
+            Toast.makeText(FourthActivity.this, "NullPointerException achsenobjekt", Toast.LENGTH_SHORT).show();
+        }catch (IndexOutOfBoundsException e){
+            Toast.makeText(FourthActivity.this, "IndexOutOfBoundsException achsenobjekt", Toast.LENGTH_SHORT).show();
+        }catch(Exception e){
+            Toast.makeText(FourthActivity.this, "was anderes achsenobjekt", Toast.LENGTH_SHORT).show();
+        }
 
         anzahlPunkteInRing= getIntent().getIntExtra("anzahlPunkteImRing", 0);
         anzahlRinge= getIntent().getIntExtra("anzahlRinge",0);
-        IndexExRechts = getIntent().getIntExtra("indexExRechts",anzahlPunkteInRing/2);
+        IndexRechts = getIntent().getIntExtra("indexExRechts",anzahlPunkteInRing/2);
         this.figure.anzahlPunkteInRing = this.anzahlPunkteInRing;
+
+        this.figure.model.hasDeckelSpitze=getIntent().getBooleanExtra("deckelSpitze",false);
+        this.figure.model.hasBodenSpitze=getIntent().getBooleanExtra("bodenSpitze",false);
 
 
         //figure.fourthActivity = true;
-        rebuildPointsVersch(getIntent().getFloatArrayExtra("x"), getIntent().getFloatArrayExtra("y"), getIntent().getFloatArrayExtra("z"));
+        rebuildPoints(getIntent().getFloatArrayExtra("x"), getIntent().getFloatArrayExtra("y"), getIntent().getFloatArrayExtra("z"));
         rebuildTriangles(getIntent().getIntArrayExtra("p0"),getIntent().getIntArrayExtra("p1"),getIntent().getIntArrayExtra("p2"));
-        rebuildRing(getIntent().getIntArrayExtra("kompletterRing"));
+        rebuildRing();
 
-        figure.extremR=this.figure.model.points.get(IndexExRechts);
+        figure.extremR=this.figure.model.points.get(IndexRechts);
 
         try {
-            fillBottom();
+            if(figure.model.hasDeckelSpitze){
+                fillBottomMitSpitze();
+            }else {
+                fillBottom();
+            }
         }catch (NullPointerException e){
             Toast.makeText(FourthActivity.this, "NullPointerException fillbottom", Toast.LENGTH_SHORT).show();
         }catch (IndexOutOfBoundsException e){
@@ -214,6 +232,80 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         //canvas für achsenobj ist fix 100 x 100 px^2
         // maxHeight = 100;
         // maxWidth = 100;
+        achsenObjekt.model.addPointToMesh(new P3D(25,25,25)); //"achsenmittelpunkt" (weiss) pointMarkers[3]
+        achsenObjekt.model.addPointToMesh(new P3D(25,25,65)); //z-achsenende (grün) pointMarkers[2]
+        achsenObjekt.model.addPointToMesh(new P3D(65,25,25)); //x-achsenende (rot) pointMarkers[4]
+        achsenObjekt.model.addPointToMesh(new P3D(25,65,25)); //y-achsenende (blau) pointMarkers[1]
+        //points for axis-cappers
+        //z-axis:
+        P3D zCap0 = new P3D((float)(25+5*Math.cos(Math.PI/4)), (float)(25+5*Math.cos(Math.PI/4)), 65);
+        P3D zCap1 = new P3D((float)(25+5*Math.cos(12*Math.PI/5)), (float)(25-5*Math.sin(12*Math.PI/5)), 65);
+        P3D zCap2 = new P3D((float)(25-5*Math.cos(Math.PI/12)), (float)(25+5*Math.sin(Math.PI/12)), 65);
+        P3D zCapPoint = new P3D(25, 25, 75);
+        //y-axis:
+        P3D yCap0 = new P3D(25, 65, 30);
+        P3D yCap1 = new P3D((float)(25+5*Math.cos(Math.PI/6)), 65, (float)(25-5*Math.sin(Math.PI/6)));
+        P3D yCap2 = new P3D((float)(25-5*Math.cos(Math.PI/6)), 65, (float)(25-5*Math.sin(Math.PI/6)));
+        P3D yCapPoint = new P3D(25, 75, 25);
+        //x-axis:
+        P3D xCap0 = new P3D(65, 25, 30);
+        P3D xCap1 = new P3D(65, (float)(25+5*Math.cos(Math.PI/6)), (float)(25-5*Math.sin(Math.PI/6)));
+        P3D xCap2 = new P3D(65, (float)(25-5*Math.cos(Math.PI/6)), (float)(25-5*Math.sin(Math.PI/6)));
+        P3D xCapPoint = new P3D(75, 25, 25);
+
+        //make points from points
+        //z-axis:
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(zCap0, zCap1, zCap2));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(zCap0, zCap1, zCapPoint));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(zCap1, zCap2, zCapPoint));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(zCap2, zCap0, zCapPoint));
+        //x-axis:
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(xCap0, xCap1, xCap2));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(xCap0, xCap1, xCapPoint));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(xCap1, xCap2, xCapPoint));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(xCap2, xCap0, xCapPoint));
+        //y-axis:
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(yCap0, yCap1, yCap2));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(yCap0, yCap1, yCapPoint));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(yCap1, yCap2, yCapPoint));
+        achsenObjekt.model.addTriangleToMesh(new Tri3D(yCap2, yCap0, yCapPoint));
+
+        //P3D punkt1, punkt2, punkt3;
+
+        /*for(int i=0;i<achsenObjekt.model.triangles.size();i++){
+            punkt1=achsenObjekt.model.triangles.get(i).getp0();
+            punkt2=achsenObjekt.model.triangles.get(i).getp1();
+            punkt3=achsenObjekt.model.triangles.get(i).getp2();
+            achsenObjekt.model.addPointToMesh(punkt1);
+            achsenObjekt.model.addPointToMesh(punkt2);
+            achsenObjekt.model.addPointToMesh(punkt3);
+        }*/
+
+        //achsenObjekt.model.addPointToMesh(new P3D(25,25,25)); //"achsenmittelpunkt" (weiss) pointMarkers[3]
+        //obsolete, contained in points for axis-cappers
+        /*
+        achsenObjekt.model.addPointToMesh(new P3D(25,25,75)); //z-achsenende (grün) pointMarkers[2]
+        achsenObjekt.model.addPointToMesh(new P3D(75,25,25)); //x-achsenende (rot) pointMarkers[4]
+        achsenObjekt.model.addPointToMesh(new P3D(25,75,25)); //y-achsenende (blau) pointMarkers[1]
+        */
+
+        //...achsen werden direkt gezeichnet, die 3 hier können also weg?
+        //z-achse
+        /*achsenObjekt.model.addEdgeToMesh(new edge(achsenObjekt.model.points.get(0),achsenObjekt.model.points.get(1)));
+        //x-achse
+        achsenObjekt.model.addEdgeToMesh(new edge(achsenObjekt.model.points.get(0),achsenObjekt.model.points.get(2)));
+        //y-achse
+        achsenObjekt.model.addEdgeToMesh(new edge(achsenObjekt.model.points.get(0),achsenObjekt.model.points.get(3)));*/
+
+        this.achsenObjekt.setPointsToDraw();
+        this.achsenObjekt.isAxisObject = true;  //sonst versucht android, mit onDraw() dreiecke, punkte, ... zu zeichnen
+
+    }
+
+    public void createAxisObjectAlt(){   //erstellt achsenobjekt aus punkten und kanten
+        //canvas für achsenobj ist fix 100 x 100 px^2
+        // maxHeight = 100;
+        // maxWidth = 100;
 
         achsenObjekt.model.addPointToMesh(new P3D(25,25,25)); //"achsenmittelpunkt" (weiss) pointMarkers[3]
         achsenObjekt.model.addPointToMesh(new P3D(25,25,75)); //z-achsenende (grün) pointMarkers[2]
@@ -306,11 +398,17 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
 
     public void reset(){
         //reset axisObject:
-        achsenObjekt.model.points.get(0).set(new P3D(25,25,25));
+        /*achsenObjekt.model.points.get(0).set(new P3D(25,25,25));
         achsenObjekt.model.points.get(1).set(new P3D(25,25,75));
         achsenObjekt.model.points.get(2).set(new P3D(75,25,25));
         achsenObjekt.model.points.get(3).set(new P3D(25,75,25));
-        this.achsenObjekt.changePointsToDraw();
+        this.achsenObjekt.changePointsToDraw();*/
+
+        achsenObjekt.model.points.clear();
+        achsenObjekt.model.edges.clear();
+        achsenObjekt.model.triangles.clear();
+        achsenObjekt.pointsToDraw.clear();
+        createAxisObject();
 
 
         for(int i=0;i<this.figure.model.points.size();i++){
@@ -321,15 +419,21 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         this.figure.changePointsToDraw();
     }
 
-    public void rebuildPoints(float[] x, float[] y, float[] z){
+    public void rebuildPointsAlt(float[] x, float[] y, float[] z){
         for(int i=0;i<x.length;i++){
             figure.model.addPointToMesh(new P3D(x[i],y[i],z[i]));
         }
     }
 
-    public void rebuildPointsVersch(float[] x, float[] y, float[] z){
+    public void rebuildPoints(float[] x, float[] y, float[] z){
         for(int i=0;i<x.length;i++){
             figure.model.addPointToMesh(new P3D(x[i],y[i],z[i]));
+        }
+        if(figure.model.hasDeckelSpitze){
+            figure.model.deckelspitze=figure.model.points.get(getIntent().getIntExtra("IndexDeckelSpitze",0));
+        }
+        if(figure.model.hasBodenSpitze){
+            figure.model.bodenspitze=figure.model.points.get(getIntent().getIntExtra("IndexBodenSpitze",0));
         }
     }
 
@@ -339,10 +443,21 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         }
     }
 
-    public void rebuildRing(int[] ring){
-        for(int i=0;i<ring.length;i++){
-            polygonringe.add(figure.model.points.get(ring[i]));
+    public void rebuildRing(){
+        for(int i=0;i<figure.model.points.size();i++){
+            polygonringe.add(figure.model.points.get(i));
         }
+        if(figure.model.hasDeckelSpitze) {
+            if (figure.model.deckelspitze != null) {
+                polygonringe.remove(figure.model.deckelspitze);
+            }
+            if(figure.model.hasBodenSpitze) {
+                if (figure.model.bodenspitze != null) {
+                    polygonringe.remove(figure.model.bodenspitze);
+                }
+            }
+        }
+        figure.polygonringe = this.polygonringe;
     }
 
     public void setExtreme(){
@@ -580,7 +695,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         item = menu1.findItem(R.id.action_undo);
         item.setVisible(!versch&&edit);
         item = menu1.findItem(R.id.action_reset);
-        item.setVisible(true&&edit);
+        item.setVisible(edit);
         item = menu1.findItem(R.id.action_textures);
         item.setVisible(true);
         item.setEnabled(figure.isFilled);
@@ -599,9 +714,12 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
 
     public void firstTwoRings(){
         if(anzahlRinge<2){
+            figure.isFilled=true; //es gibt nichts mehr zum auffuellen wegen zu wenig Ringen (sollte nur im Fall auftreten, dass mindestens eine Spitze vorhanden ist)
+            invalidateOptionsMenu();
             return;
         }
         int IndexExLinks=0;
+        int IndexExRechts = polygonringe.indexOf(figure.extremR);
         //int IndexExRechts=this.figure.model.points.indexOf(figure.extremR); //uebertragen aus dritter Acticity?
         //float ringmitteBreite=(polygonringe.get(IndexExLinks).x+polygonringe.get(IndexExLinks+anzahlPunkteInRing).x
          //       +polygonringe.get(IndexExRechts).x+polygonringe.get(IndexExRechts+anzahlPunkteInRing).x)/4;
@@ -669,7 +787,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
     }
 
     public void fillDown(){ //kopiere die Dreiecke, die sich zwischen Ring 1 und Ring 2 befinden, nach unten
-        if(anzahlRinge==2||figure.model.triangles.size()==0||figure.newTriangles==0){ //wenn es nur zwei Ringe oder gar keine Dreiecke im Modell oder keine neu hinzugefuegten gibt
+        if(anzahlRinge<=2||figure.model.triangles.size()==0||figure.newTriangles==0){ //wenn es weniger als zwei Ringe oder gar keine Dreiecke im Modell oder keine neu hinzugefuegten gibt
             return;
         }
         int counter = figure.model.triangles.size()-figure.newTriangles;
@@ -814,6 +932,92 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         }
     }
 
+    public void fillBottomMitSpitze(){ //kopiere die Dreiecke des "Deckels" des Modells (TopView) auf den Boden des Modells
+        int abstandLetzterRing=this.polygonringe.size()-this.anzahlPunkteInRing;
+        int anzahlDreiecke=this.figure.model.triangles.size(); // Anzahl der Dreiecke, die kopiert werden muessen
+        if(figure.model.hasBodenSpitze==false){
+            //PointF schwerpunkt=figure.schwerpunkt(0);
+            float y=polygonringe.get(polygonringe.size()-1).y;
+            figure.model.bodenspitze = new P3D(figure.model.deckelspitze.x,y,figure.model.deckelspitze.z);
+            figure.model.addPointToMesh(figure.model.bodenspitze);
+            //hasBodenSpitze bleibt trotzdem auf "false", da eigentlich keine Spitze vorhanden
+        }
+        int pos0,pos1,pos2;
+        P3D p0,p1,p2;
+        for(int i=0;i<anzahlDreiecke;i++){
+            pos0=this.polygonringe.indexOf(figure.model.triangles.get(i).getp0());
+            if(pos0==-1){
+                p0=figure.model.bodenspitze;
+            }else{
+                pos0=pos0+abstandLetzterRing;
+                p0=this.polygonringe.get(pos0);
+            }
+            pos1=this.polygonringe.indexOf(figure.model.triangles.get(i).getp1());
+            if(pos1==-1){
+                p1=figure.model.bodenspitze;
+            }else{
+                pos1=pos1+abstandLetzterRing;
+                p1=this.polygonringe.get(pos1);
+            }
+            pos2=this.polygonringe.indexOf(figure.model.triangles.get(i).getp2());
+            if(pos2==-1){
+                p2=figure.model.bodenspitze;
+            }else{
+                pos2=pos2+abstandLetzterRing;
+                p2=this.polygonringe.get(pos2);
+            }
+            figure.model.addTriangleToMesh(new Tri3D(p0,p1,p2));
+        }
+        Tri3D lastdeckel=null; //Dreieck, das ersten Punkt und letzten Punkt des Polygonringes beinhaltet -> IndexModulSumme unbrauchbar
+        Tri3D lastBoden=null;
+        Tri3D current;
+        P3D erster=polygonringe.get(0);
+        P3D letzer=polygonringe.get(anzahlPunkteInRing-1);
+        int index;
+        int haelfte = figure.model.triangles.size()/2;
+        boolean islast;
+        for(int i=0,h=haelfte;i<haelfte;i++,h++){
+        //for(int i=0,h=figure.model.triangles.size()/2;i<figure.model.triangles.size()/2;i++,h++){
+            index=this.figure.deckel.size();
+            current=this.figure.model.triangles.get(i);
+            islast=false;
+
+            if(current.getp0().compare(erster)||current.getp1().compare(erster)||current.getp2().compare(erster)){
+                if(current.getp0().compare(letzer)||current.getp1().compare(letzer)||current.getp2().compare(letzer)){
+                    lastdeckel=current;
+                    lastBoden=this.figure.model.triangles.get(h);
+                    islast=true;
+                }
+            }
+            if(!islast){
+                for (int j = 0; j < this.figure.deckel.size(); j++) {
+                    if (this.figure.IndexModulSumme(this.figure.deckel.get(j)) > this.figure.IndexModulSumme(current)) {
+                        index = j;
+                        break;
+                    }
+                }
+                //this.figure.deckel.add(this.figure.model.triangles.get(i));
+                if (index == this.figure.deckel.size()) {
+                    this.figure.deckel.add(current);
+                    this.figure.boden.add(this.figure.model.triangles.get(h));
+                } else {
+                    this.figure.deckel.add(index, current);
+                    this.figure.boden.add(index, this.figure.model.triangles.get(h));
+                }
+            }
+        }
+        if(lastdeckel!=null) {
+            this.figure.deckel.add(lastdeckel);
+        }
+        if(lastBoden!=null){
+            this.figure.boden.add(lastBoden);
+        }
+
+        /*for(int i=figure.model.triangles.size()/2;i<figure.model.triangles.size();i++){
+            this.figure.boden.add(this.figure.model.triangles.get(i));
+        }*/
+    }
+
     public void sortRings(){
         /*ArrayList<P3D> old = this.polygonringe;
         this.polygonringe.clear();
@@ -846,7 +1050,11 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
             for(int i=0;i<polygonringe.size();i++){
                 old.add(polygonringe.get(i));
             }
-            this.figure.model.points.clear(); // Spitzen???
+            if(!figure.model.hasDeckelSpitze) {
+                this.figure.model.points.clear();
+            }else{
+                this.figure.model.points.removeAll(polygonringe);
+            }
             this.polygonringe.clear();
             for(int i=0;i<durchschnitte.length;i++){
                 index=findMinimumIndex(durchschnitte);
@@ -1016,7 +1224,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
                     this.figure.rotateZAxis();
                     figure.updateStuff();
                     this.achsenObjekt.rotateZAxis();
-                    figure.invalidate();
+                    this.achsenObjekt.invalidate();
                     //figure.invalidate();
                 }catch (NullPointerException e){
                     Toast.makeText(FourthActivity.this, "NullPointerException", Toast.LENGTH_SHORT).show();
@@ -1171,7 +1379,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
 
     /** Defining button click listener for the OK button of the alert dialog window */
     @Override
-    public void onPositiveClick(int item) {
+    public void onPositiveClick(boolean b, int item) {
 
     }
 

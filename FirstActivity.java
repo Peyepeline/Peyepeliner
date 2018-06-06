@@ -48,6 +48,8 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
 
     private String pictureImagePath = "";
 
+    public int anzahlSpitzen=1;
+
     //Neu:
     //Intent intent;
 
@@ -228,6 +230,7 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
                 //Bitmap bitmap = importedPhoto.getDrawingCache();
                 //intent.putExtra("Bitmap", bitmap);
 		        intent.putExtra("Typ",importedPhoto.canvasTypeTri);
+                intent.putExtra("anzahlSpitzen",anzahlSpitzen);
                 startActivity(intent);
 
                 return true;
@@ -269,30 +272,47 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
 
     /** Defining button click listener for the OK button of the alert dialog window */
     @Override
-    public void onPositiveClick(int item) {
-        switch (item) {
-            case 0:
-                if(pictureImagePath!=null) {
-                    //TopView
-                    importedPhoto.canvasTypeTri = true;
-                    //chose correct buttons to show
-                    picTaken = true;
-                    //via boolean comparative
-                    //TODO - give reaction to choice - only in 2ndAct.
-                }
-                break;
-            case 1:
-                if(pictureImagePath!=null) {//Side-|FrontView
-                    importedPhoto.canvasTypeTri = false;
-                    //chose correct buttons to show
-                    picTaken = true;
-                    //via boolean comparative
-                    //TODO - give reaction to choice - only in 2ndAct.
-                }
-                break;
+    public void onPositiveClick(boolean dialogType, int item) {
+        if(dialogType){ //positive Click on dialog for perspective choice
+            switch (item) {
+                case 0:
+                    if(pictureImagePath!=null) {
+                        //TopView
+                        importedPhoto.canvasTypeTri = true;
+                        //chose correct buttons to show
+                        picTaken = true;
+                        //via boolean comparative
+                        //TODO - give reaction to choice - only in 2ndAct.
+                    }
+                    break;
+                case 1:
+                    if(pictureImagePath!=null) {//Side-|FrontView
+                        importedPhoto.canvasTypeTri = false;
+                        //chose correct buttons to show
+                        picTaken = true;
+                        //via boolean comparative
+                        //TODO - give reaction to choice - only in 2ndAct.
+                    }
+                    break;
+            }
+            Toast.makeText(FirstActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();
+            invalidateOptionsMenu();
+        }else{  //positive Click on dialog for peaks choice
+            switch (item) {
+                case 0: //0 peaks, flat bottom/top
+                    anzahlSpitzen = 0;
+                    break;
+                case 1: //flat bottom, peak top
+                    anzahlSpitzen = 1;
+                    break;
+                case 2: //2 peaks
+                    anzahlSpitzen = 2;
+                    break;
+            }
+            Toast.makeText(FirstActivity.this, "Spitzen: "+ item, Toast.LENGTH_LONG).show();
+            //keine Knopf-Veränderungen, also kein invalidateOptionsMenu()
         }
-        Toast.makeText(FirstActivity.this, "Typ: "+ item, Toast.LENGTH_LONG).show();
-        invalidateOptionsMenu();
+
         /*this.position = position;
         /** Getting the reference of the textview from the main layout
         TextView tv = (TextView) findViewById(R.id.tv_android);
@@ -351,6 +371,7 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
         FragmentManager fManager = getFragmentManager();
         /** Instantiating the DialogFragment class */
         AlertDialogRadio alert = new AlertDialogRadio();
+        alert.dialogUse = true; //dialog use: perspective choice
         /** Creating a bundle object to store the selected item's index */
         Bundle b  = new Bundle();
         /** Storing the selected item's index in the bundle object */
@@ -359,6 +380,22 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
         alert.setArguments(b);
         /** Creating the dialog fragment object, which will in turn open the alert dialog window */
         alert.show(fManager, "alert_dialog_radio");
+    }
+
+    public void chosePeakType() {
+        /** Getting the fragment manager */
+        FragmentManager fManager = getFragmentManager();
+        /** Instantiating the DialogFragment class */
+        AlertDialogRadio peakTypeAlert = new AlertDialogRadio();
+        peakTypeAlert.dialogUse = false;    //dialog use: peaks choice
+        /** Creating a bundle object to store the selected item's index */
+        Bundle bundle  = new Bundle();
+        /** Storing the selected item's index in the bundle object */
+        bundle.putInt("position", item);
+        /** Setting the bundle object to the dialog fragment object */
+        peakTypeAlert.setArguments(bundle);
+        /** Creating the dialog fragment object, which will in turn open the alert dialog window */
+        peakTypeAlert.show(fManager, "alert_dialog_radio");
     }
 
 
@@ -385,7 +422,7 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
         //fileprovider-method... needlessly complicated!
         //Uri TakenPhotoUri = FileProvider.getUriForFile(this, "com.example.core.fileprovider", file);
 
-        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, TakenPhotoUri);
         startActivityForResult(cameraIntent, CAMERA_REQUEST);
         //choseCanvasType();
@@ -434,6 +471,7 @@ public class FirstActivity extends AppCompatActivity implements AlertPositiveLis
                 picTaken=false; //falls schon ein Foto gemacht wurde; wuerde picTaken auf true bleiben, wuerde Canvas-Typ zwangsweise geaendert
             }
             choseCanvasType();
+            chosePeakType();
         }
     }
 }

@@ -217,6 +217,7 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
                 intent.putExtra("TypBild2",importedPhoto.canvasTypeTri);
                 intent.putExtra("OrigAbmessX", importedPhoto.getWidth());
                 intent.putExtra("OrigAbmessY",importedPhoto.getHeight());
+                intent.putExtra("anzahlSpitzen",getIntent().getIntExtra("anzahlSpitzen",0));
                 startActivity(intent);
                 return true;
 				
@@ -258,7 +259,7 @@ public class SecondActivity extends AppCompatActivity implements AlertPositiveLi
     }
     /** Defining button click listener for the OK button of the alert dialog window */
     @Override
-    public void onPositiveClick(int item) {
+    public void onPositiveClick(boolean b, int item) {
         switch (item) {
             case 0:
                 if(pictureImagePath!=null) {

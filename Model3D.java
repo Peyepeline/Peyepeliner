@@ -59,6 +59,12 @@ public class Model3D {
     public ArrayList<P3D> points = new ArrayList<P3D>();
     public ArrayList<edge> edges = new ArrayList<edge>();
     public ArrayList<Tri3D> triangles = new ArrayList<Tri3D>();
+
+    public P3D deckelspitze;
+    public P3D bodenspitze;
+    public boolean hasDeckelSpitze;
+    public boolean hasBodenSpitze;
+
     //TODO - check existence: Arraylist for 2-|3-tupled objects - done. don't use, use (edge)s instead
 
     //TODO - implement: topCoverFaces, (getPolyRing), (scalePolyRing)
@@ -168,6 +174,9 @@ public class Model3D {
         }
         if(!alreadyContained){   //check for t and all point-wise equivalents!
             triangles.add(t);
+            addPointToMesh(op0);
+            addPointToMesh(op1);
+            addPointToMesh(op2);
         }
     }
 

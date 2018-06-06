@@ -124,6 +124,8 @@ public class ImageCanvas extends ImageView {
     public ArrayList<Tri3D> deckel = new ArrayList<Tri3D>();
     public ArrayList<Tri3D> seiten = new ArrayList<Tri3D>();
 
+    public ArrayList<P3D> polygonringe;
+
     public boolean isAxisObject = false;
 
     //public boolean fourthActivity = false;
@@ -137,6 +139,8 @@ public class ImageCanvas extends ImageView {
     private Paint selectMarker = new Paint();
     private Paint[] pointMarkers= new Paint[5];
     private Paint greyMarker = new Paint();
+    private Paint spitzenMarker = new Paint();
+    private Paint axisContourPaint = new Paint();   //for contours
     public int anzahlPunkteInRing;
     public boolean isFilled = false; //Dreiecke wurden noch nicht aufgefuellt
 
@@ -221,7 +225,9 @@ public class ImageCanvas extends ImageView {
         selectMarker.setStyle(Paint.Style.STROKE);
         selectMarker.setColor(Color.YELLOW);
         selectMarker.setStrokeWidth(10);
-
+        axisContourPaint.setStyle(Paint.Style.STROKE);
+        axisContourPaint.setColor(Color.BLACK);
+        axisContourPaint.setStrokeWidth(1);
         pointMarkers[0] = new Paint();
         pointMarkers[0].setStyle(Paint.Style.FILL);
         pointMarkers[0].setColor(Color.MAGENTA);
@@ -246,6 +252,10 @@ public class ImageCanvas extends ImageView {
         greyMarker.setStyle(Paint.Style.FILL);
         greyMarker.setColor(Color.GRAY);
         greyMarker.setStrokeWidth(10);
+
+        spitzenMarker.setStyle(Paint.Style.FILL);
+        spitzenMarker.setColor(Color.CYAN);
+        spitzenMarker.setStrokeWidth(10);
     }
 
     public void setPointsToDraw(){
@@ -520,21 +530,21 @@ public class ImageCanvas extends ImageView {
         PointF schwerpunkt = new PointF(0,0); //x und z Koordinate
         P3D currentPoint1, currentPoint2;
         for(int i=ring*anzahlPunkteInRing;i<(ring+1)*anzahlPunkteInRing;i++){
-            currentPoint1=this.model.points.get(i);
+            currentPoint1=this.polygonringe.get(i);
             if(i+1==(ring+1)*anzahlPunkteInRing){
-                currentPoint2= this.model.points.get(ring*anzahlPunkteInRing);
+                currentPoint2= this.polygonringe.get(ring*anzahlPunkteInRing);
             }else{
-                currentPoint2= this.model.points.get(i+1);
+                currentPoint2= this.polygonringe.get(i+1);
             }
             flaeche=flaeche+((currentPoint1.x*currentPoint2.z)-(currentPoint2.x*currentPoint1.z));
         }
         flaeche=flaeche/2;
         for(int i=ring*anzahlPunkteInRing;i<(ring+1)*anzahlPunkteInRing;i++){
-            currentPoint1=this.model.points.get(i);
+            currentPoint1=this.polygonringe.get(i);
             if(i+1==(ring+1)*anzahlPunkteInRing){
-                currentPoint2= this.model.points.get(ring*anzahlPunkteInRing);
+                currentPoint2= this.polygonringe.get(ring*anzahlPunkteInRing);
             }else{
-                currentPoint2= this.model.points.get(i+1);
+                currentPoint2= this.polygonringe.get(i+1);
             }
             schwerpunkt.x=schwerpunkt.x+(currentPoint1.x+currentPoint2.x)*((currentPoint1.x*currentPoint2.z)-(currentPoint2.x*currentPoint1.z));
             schwerpunkt.y=schwerpunkt.y+(currentPoint1.z+currentPoint2.z)*((currentPoint1.x*currentPoint2.z)-(currentPoint2.x*currentPoint1.z));
@@ -643,7 +653,7 @@ public class ImageCanvas extends ImageView {
         }
     }
 
-    public P3D getClosestPoint4(PointF pos){
+    public P3D getClosestPoint4Alt(PointF pos){
         //this.populatePointList();
         P3D currPt = this.model.points.get(0);
         double currAbstand = abstand(pos, currPt.getPointF());
@@ -657,6 +667,28 @@ public class ImageCanvas extends ImageView {
         for (int i=1;i<lastPointToCheck;i++) { //nur die ersten beiden Ringe
             pointInArrayList=this.model.points.get(i);
             if (abstand(pos, pointInArrayList.getPointF()) < currAbstand && i%anzahlPunkteInRing<=this.model.points.indexOf(extremR) ) {
+                currPt = pointInArrayList;
+                currAbstand = abstand(pos, currPt.getPointF());
+            }
+        }
+        return currPt;
+        //return new P3D(0, 0);   //IF NO POINT FOUND, FALLBACK TO THIS ONE
+    }
+
+    public P3D getClosestPoint4(PointF pos){
+        //this.populatePointList();
+        P3D currPt = this.polygonringe.get(0);
+        double currAbstand = abstand(pos, currPt.getPointF());
+        P3D pointInArrayList;
+        int lastPointToCheck;
+        if(anzahlPunkteInRing*2<=this.polygonringe.size()){ //sollte immer true sein, da jedes Modell mindestens zwei Ringe haben muesste
+            lastPointToCheck=anzahlPunkteInRing*2;
+        }else{
+            lastPointToCheck=this.polygonringe.size(); //falls es doch nur einen Ring gibt
+        }
+        for (int i=1;i<lastPointToCheck;i++) { //nur die ersten beiden Ringe
+            pointInArrayList=this.polygonringe.get(i);
+            if (abstand(pos, pointInArrayList.getPointF()) < currAbstand && i%anzahlPunkteInRing<=this.polygonringe.indexOf(extremR) ) {
                 currPt = pointInArrayList;
                 currAbstand = abstand(pos, currPt.getPointF());
             }
@@ -694,6 +726,70 @@ public class ImageCanvas extends ImageView {
 
 
     public void capturePoints4(float x, float y){
+        if(this.pointsNb==0){
+            point1 = getClosestPoint4(new PointF(x,y));
+            if(point1!=null) {
+                this.pointsNb = 1;
+            }
+            return;
+        }
+        if(this.pointsNb==1){
+            point2 = getClosestPoint4(new PointF(x,y));
+            if(point2!=null) {
+                if(point2.compare(point1)){ //zweiter Punkt des Dreiecks darf nicht gleich dem ersten Punkt des Dreiecks sein
+                    point2=null;
+                }else {
+                    if(Math.abs((this.polygonringe.indexOf(point2)%anzahlPunkteInRing)-(this.polygonringe.indexOf(point1)%anzahlPunkteInRing))>1){
+                        point2=null;
+                    }else {
+                        this.pointsNb = 2;
+                    }
+                }
+            }
+            return;
+        }
+        if(this.pointsNb==2){
+            point3 = getClosestPoint4(new PointF(x,y));
+            if(point3.compare(point1)||point3.compare(point2)){ // dritter Punkt muss unterschiedlich zu ersten und zweitem Punkt sein
+                point3=null;
+                return;
+            }
+            if(Math.abs((this.polygonringe.indexOf(point3)%anzahlPunkteInRing)-(this.polygonringe.indexOf(point1)%anzahlPunkteInRing))>1){
+                point3=null;
+                return;
+            }
+            if(Math.abs((this.polygonringe.indexOf(point3)%anzahlPunkteInRing)-(this.polygonringe.indexOf(point2)%anzahlPunkteInRing))>1){
+                point3=null;
+                return;
+            }
+            if(point3!=null) {
+                this.pointsNb = 0;
+                int alt = this.model.triangles.size();
+                Tri3D neu=new Tri3D(point1, point2, point3);
+                boolean intersects=false;
+                for(int i=0;i<this.model.triangles.size();i++){
+                    if(neu.intersects(neu,this.model.triangles.get(i))){
+                        intersects=true;
+                        return;
+                    }
+                }
+                this.model.addTriangleToMesh(neu);
+                if(alt<this.model.triangles.size()) {
+                    ++this.newTriangles;
+                    zuletztHinzugefuegt.add(neu); // fuer "undo"-Funktion
+                    try {
+                        sortInNewTriangle();
+                    }catch (NullPointerException e){
+                        this.model.triangles.get(this.model.triangles.size()-1).setColour(Color.GREEN);
+                    }catch (IndexOutOfBoundsException e){
+                        this.model.triangles.get(this.model.triangles.size()-1).setColour(Color.RED);
+                    }
+                }
+            }
+        }
+    }
+
+    public void capturePoints4Alt(float x, float y){
         if(this.pointsNb==0){
             point1 = getClosestPoint4(new PointF(x,y));
             if(point1!=null) {
@@ -780,6 +876,15 @@ public class ImageCanvas extends ImageView {
     }
 
     public int IndexModulSumme(Tri3D dreieck){
+        int summe;
+        int p0 = this.polygonringe.indexOf(dreieck.getp0())%anzahlPunkteInRing;
+        int p1 = this.polygonringe.indexOf(dreieck.getp1())%anzahlPunkteInRing;
+        int p2 = this.polygonringe.indexOf(dreieck.getp2())%anzahlPunkteInRing;
+        summe = p0+p1+p2;
+        return summe;
+    }
+
+    public int IndexModulSummeAlt(Tri3D dreieck){
         int p0 = this.model.points.indexOf(dreieck.getp0())%anzahlPunkteInRing;
         int p1 = this.model.points.indexOf(dreieck.getp1())%anzahlPunkteInRing;
         int p2 = this.model.points.indexOf(dreieck.getp2())%anzahlPunkteInRing;
@@ -1084,9 +1189,16 @@ public class ImageCanvas extends ImageView {
 
     public Rect getTopRechteck(){
         float links=this.getWidth();float oben=this.getHeight(); float rechts=0; float unten=0;
-        P3D currentPoint;
+        ArrayList<P3D> punkteOben = new ArrayList<P3D>();
         for(int i=0;i<anzahlPunkteInRing;i++){
-            currentPoint=this.model.points.get(i);
+            punkteOben.add(polygonringe.get(i));
+        }
+        if(model.hasDeckelSpitze){
+            punkteOben.add(model.deckelspitze);
+        }
+        P3D currentPoint;
+        for(int i=0;i<punkteOben.size();i++){
+            currentPoint=punkteOben.get(i);
             if(currentPoint.x<links){
                 links=currentPoint.x;
             }
@@ -1312,6 +1424,9 @@ public class ImageCanvas extends ImageView {
         PathShape shapath;
         Tri3D currentTri;
         if(bodenZuerst){
+            if(model.hasBodenSpitze){
+                side();
+            }
             for(int j=0;j<boden.size();j++){
                 currentTri = boden.get(j);
                 //if(textures){
@@ -1331,6 +1446,13 @@ public class ImageCanvas extends ImageView {
                 //canvas3.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
             }
         }else{
+            if(model.hasDeckelSpitze){
+                if(model.deckelspitze.z==model.bodenspitze.z){
+                    side();;
+                }else {
+                    top();
+                }
+            }
             for(int j=0;j<deckel.size();j++){
                 currentTri = deckel.get(j);
                 //if(textures){
@@ -1377,12 +1499,22 @@ public class ImageCanvas extends ImageView {
             //nicht abstuerzen
         }*/
         if(!bodenZuerst){
-            bottom();
+            if(model.hasBodenSpitze){
+                side();
+            }else {
+                bottom();
+            }
             for(int j=0;j<boden.size();j++){
                 currentTri = boden.get(j);
                 //if(textures){
                     if(photoTexture) {
-                        canvas3.drawPath(pathify(currentTri), greyMarker);
+                            if(!model.hasBodenSpitze) {
+                                canvas3.drawPath(pathify(currentTri), greyMarker);
+                            }else{
+                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
+                                shapath.resize(this.getWidth(), this.getHeight());
+                                shapath.draw(canvas3, shapaint);
+                            }
                     }else {
                         shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
                         shapath.resize(this.getWidth(), this.getHeight());
@@ -1394,7 +1526,11 @@ public class ImageCanvas extends ImageView {
                 //canvas3.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
             }
         }else{
-            top();
+            if(model.hasDeckelSpitze&&(model.bodenspitze.z==model.deckelspitze.z)){
+                side();
+            }else {
+                top();
+            }
             for(int j=0;j<deckel.size();j++){
                 currentTri = deckel.get(j);
                 //if(textures){
@@ -1423,7 +1559,15 @@ public class ImageCanvas extends ImageView {
     }
 
     public void updateStuff(){
-        reihenfolge();
+        if(isAxisObject){
+            this.invalidate();
+            return;
+        }
+        if(model.hasDeckelSpitze){
+            reihenfolgeMitSpitze();
+        }else {
+            reihenfolge();
+        }
         drawOnBitmap();
         this.invalidate();
         //rotatedZ=0;
@@ -1737,14 +1881,245 @@ public class ImageCanvas extends ImageView {
         }
     }
 
+    public void reihenfolgeMitSpitze(){
+        Dreiecke.clear();
+        int i=0;
+        Tri3D currentTri;
+        float maxDeckel = this.polygonringe.get(0).z; //points=Ring
+        int maxPos=0;
+        for(int j=1;j<anzahlPunkteInRing;j++){
+            if(maxDeckel<this.polygonringe.get(j).z){
+                maxPos=j;
+                maxDeckel=this.polygonringe.get(j).z;
+            }
+        }
+        int hintenDeckel, hintenBoden;
+        int w1,w2;
+        boolean[] dreieckeDB  = new boolean[deckel.size()];
+        for(int h=0;h<dreieckeDB.length;h++){
+            dreieckeDB[h]=false;
+        }
+        if(model.bodenspitze.z>=model.deckelspitze.z){
+            bodenZuerst=true;
+            hintenBoden=hintenBoden(polygonringe.get(maxPos));
+            w1=hintenBoden; w2=hintenBoden;
+            Dreiecke.add(boden.get(hintenBoden));
+            while (Dreiecke.size()<boden.size()){
+                if(--w1<0){
+                    w1=boden.size()-1;
+                }
+                if(++w2>=boden.size()){
+                    w2=0;
+                }
+                if(dreieckeDB[w1]==false) {
+                    Dreiecke.add(boden.get(w1));
+                    dreieckeDB[w1]=true;
+                }
+                if(Dreiecke.size()>=boden.size()){
+                    break;
+                }else{
+                    if(dreieckeDB[w2]==false) {
+                        Dreiecke.add(boden.get(w2));
+                        dreieckeDB[w2]=true;
+                    }
+                }
+            }
+            /*for(int j=0;j<boden.size();j++){
+                Dreiecke.add(boden.get(j));
+            }*/
+        }else{
+            bodenZuerst=false;
+            hintenDeckel=hintenDeckel(polygonringe.get(maxPos));
+            w1=hintenDeckel; w2=hintenDeckel;
+            Dreiecke.add(deckel.get(hintenDeckel));
+            while (Dreiecke.size()<deckel.size()){
+                if(--w1<0){
+                    w1=deckel.size()-1;
+                }
+                if(++w2>=deckel.size()){
+                    w2=0;
+                }
+                if(dreieckeDB[w1]==false) {
+                    Dreiecke.add(deckel.get(w1));
+                    dreieckeDB[w1]=true;
+                }
+                if(Dreiecke.size()>=deckel.size()){
+                    break;
+                }else{
+                    if(dreieckeDB[w2]==false) {
+                        Dreiecke.add(deckel.get(w2));
+                        dreieckeDB[w2]=true;
+                    }
+                }
+            }
+            /*for(int j=0;j<deckel.size();j++) {
+                Dreiecke.add(deckel.get(j));
+            }*/
+        }
+        seiten.clear();
+        for(int h=2*boden.size();h<model.triangles.size();h++){
+            seiten.add(model.triangles.get(h)); //nur zu Testzwecken, dauerndes Umaendern der Liste unnoetig!
+        }
+        boolean[] dreiecke = new boolean[seiten.size()];
+        for(int h=0;h<dreiecke.length;h++){
+            dreiecke[h]=false;
+        }
+        if(seiten.size()>0) {
+            int hinten = hinten(polygonringe.get(maxPos));
+            i = 0;
+            int ebenen = this.polygonringe.size() / anzahlPunkteInRing - 1;
+            int next;
+            for (int j = 0; j < ebenen; j++) {
+                next = hinten + (j * anzahlPunkteInRing * 2);
+                if(next>=seiten.size()||i>=seiten.size()){
+                    break;
+                }
+                Dreiecke.add(seiten.get(next));
+                dreiecke[next]=true;
+                i++;
+            }
+            int weiter1 = hinten, weiter2 = hinten;
+            while(i<seiten.size()){
+                if (--weiter1 < 0) {
+                    weiter1 = (anzahlPunkteInRing * 2)-1;
+                }
+                if (++weiter2 >= anzahlPunkteInRing * 2) {
+                    weiter2 = 0;
+                }
+                for(int j = 0; j < ebenen; j++){
+                    next = weiter1 + (j * anzahlPunkteInRing * 2);
+                    if(next<seiten.size()&&dreiecke[next]==false) {
+                        Dreiecke.add(seiten.get(next));
+                        dreiecke[next]=true;
+                        i++;
+                        if (i == seiten.size()) {
+                            break;
+                        }
+                    }
+                    next = weiter2 + (j * anzahlPunkteInRing * 2);
+                    if(next<seiten.size()&&dreiecke[next]==false) {
+                        Dreiecke.add(seiten.get(next));
+                        dreiecke[next]=true;
+                        i++;
+                        if (i == seiten.size()) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        for(int h=0;h<dreieckeDB.length;h++){
+            dreieckeDB[h]=false;
+        }
+        if(model.bodenspitze.z<model.deckelspitze.z){
+            hintenBoden=hintenBoden(polygonringe.get(maxPos));
+            w1=hintenBoden; w2=hintenBoden;
+            Dreiecke.add(boden.get(hintenBoden));
+            while (Dreiecke.size()<model.triangles.size()){
+                if(--w1<0){
+                    w1=boden.size()-1;
+                }
+                if(++w2>=boden.size()){
+                    w2=0;
+                }
+                if(dreieckeDB[w1]==false) {
+                    Dreiecke.add(boden.get(w1));
+                    dreieckeDB[w1]=true;
+                }
+                if(Dreiecke.size()>=model.triangles.size()){
+                    break;
+                }else{
+                    if(dreieckeDB[w2]==false) {
+                        Dreiecke.add(boden.get(w2));
+                        dreieckeDB[w2]=true;
+                    }
+                }
+            }
+            /*for(int j=0;j<boden.size();j++){
+                Dreiecke.add(boden.get(j));
+            }*/
+        }else{
+            hintenDeckel=hintenDeckel(polygonringe.get(maxPos));
+            w1=hintenDeckel; w2=hintenDeckel;
+            Dreiecke.add(deckel.get(hintenDeckel));
+            while (Dreiecke.size()<model.triangles.size()) {
+                if (--w1 < 0) {
+                    w1 = deckel.size() - 1;
+                }
+                if (++w2 >= deckel.size()) {
+                    w2 = 0;
+                }
+                if (dreieckeDB[w1] == false) {
+                    Dreiecke.add(deckel.get(w1));
+                    dreieckeDB[w1] = true;
+                }
+                if (Dreiecke.size() >= model.triangles.size()) {
+                    break;
+                } else {
+                    if (dreieckeDB[w2] == false) {
+                        Dreiecke.add(deckel.get(w2));
+                        dreieckeDB[w2] = true;
+                    }
+                }
+            }/*for(int j=0;j<deckel.size();j++){
+                Dreiecke.add(deckel.get(j));
+            }*/
+        }
+    }
+
     //done - both.
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         //reihenfolge();
         //updateStuff();
         super.onDraw(canvas);
+        try{
+        if(isAxisObject) {   //FALL: ist achsenobjekt (also keine dreiecke, nur punkte und kanten)
+            //punkte (mittelpunkt ist leicht größer und weiss):
+            canvas.drawCircle(pointsToDraw.get(0).x, pointsToDraw.get(0).y, 10, pointMarkers[3]);
+            //obsolete, now has points à 4 triangles each
+            /*
+            canvas.drawCircle(pointsToDraw.get(1).x, pointsToDraw.get(1).y, 5, pointMarkers[2]);
+            canvas.drawCircle(pointsToDraw.get(2).x, pointsToDraw.get(2).y, 5, pointMarkers[4]);
+            canvas.drawCircle(pointsToDraw.get(3).x, pointsToDraw.get(3).y, 5, pointMarkers[1]);
+            */
 
-        if(isAxisObject){   //FALL: ist achsenobjekt (also keine dreiecke, nur punkte und kanten)
+            //achsen:
+            canvas.drawLine(pointsToDraw.get(0).x, pointsToDraw.get(0).y, pointsToDraw.get(1).x, pointsToDraw.get(1).y, pointMarkers[2]);
+            canvas.drawLine(pointsToDraw.get(0).x, pointsToDraw.get(0).y, pointsToDraw.get(2).x, pointsToDraw.get(2).y, pointMarkers[4]);
+            canvas.drawLine(pointsToDraw.get(0).x, pointsToDraw.get(0).y, pointsToDraw.get(3).x, pointsToDraw.get(3).y, pointMarkers[1]);
+
+            //axis-capper (ordered z-y-x):
+            if(!model.triangles.isEmpty()) {
+                for (Tri3D triangleIterator : model.triangles) {
+                    //(int)-casting um aus "/" "div" (ganzzahlige division) zu machen (for chosing colours)
+                    if ((int) model.triangles.indexOf(triangleIterator) / (int) 4 == 0) { //case: tris 0-3: pointMarkers[2]
+                        canvas.drawPath(pathify(triangleIterator), pointMarkers[2]);   //draw filled Tri
+                    }
+                    if ((int) model.triangles.indexOf(triangleIterator) / (int) 4 == 1) { //case: tris 4-7: pointMarkers[4]
+                        canvas.drawPath(pathify(triangleIterator), pointMarkers[4]);   //draw filled Tri
+                    }
+                    if ((int) model.triangles.indexOf(triangleIterator) / (int) 4 == 2) { //case: tris 8-11: pointMarkers[1]
+                        canvas.drawPath(pathify(triangleIterator), pointMarkers[1]);   //draw filled Tri
+                    }
+                    canvas.drawPath(pathify(triangleIterator), axisContourPaint);
+                }
+            }else{
+                canvas.drawRect(0,0,100,100,pointMarkers[3]);
+            }
+
+            //wenn isAxisObject: abbruch hiernach!
+            return;
+        }
+        }catch(NullPointerException e){
+            canvas.drawRect(0,0,100,100,pointMarkers[0]);
+        }catch (IndexOutOfBoundsException e){
+            canvas.drawRect(0,0,100,100,pointMarkers[1]);
+        }catch(Exception e){
+            canvas.drawRect(0,0,100,100,pointMarkers[2]);
+        }
+
+        /*if(isAxisObject){   //FALL: ist achsenobjekt (also keine dreiecke, nur punkte und kanten)
                        //punkte (mittelpunkt ist leicht größer und weiss):
             canvas.drawCircle(pointsToDraw.get(0).x, pointsToDraw.get(0).y, 10, pointMarkers[3]);
             canvas.drawCircle(pointsToDraw.get(1).x, pointsToDraw.get(1).y, 5, pointMarkers[2]);
@@ -1756,7 +2131,7 @@ public class ImageCanvas extends ImageView {
             canvas.drawLine (pointsToDraw.get(0).x, pointsToDraw.get(0).y, pointsToDraw.get(3).x, pointsToDraw.get(3).y, pointMarkers[1]);
                        //wenn isAxisObject: abbruch hiernach!
             return;
-        }
+        }*/
 
         //canvas.drawRect(getTopRechteck(), null);
         /*Bitmap testBitmap=Bitmap.createBitmap(this.getWidth(),this.getHeight(),Bitmap.Config.ARGB_8888);
@@ -1771,47 +2146,111 @@ public class ImageCanvas extends ImageView {
         /*canvas.drawCircle(this.getWidth()/2, 0, 20, greyMarker);
         canvas.drawCircle(this.getWidth(), 0, 20, greyMarker);
         canvas.drawCircle((model.points.get(0).x+extremR.x)/2, 0, 20, selectMarker);*/
+        int index;
         if (!this.isFilled) {
-            for (int i = 0; i < model.points.size(); i++) {
+            /*for (int i = 0; i < model.points.size(); i++) {
                 if (i % anzahlPunkteInRing > this.model.points.indexOf(extremR) || i >= anzahlPunkteInRing * 2) {
                     canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, greyMarker);
                 }
+            }*/
+            for(int i=0;i<this.polygonringe.size();i++){ //erst die grauen Punkte malen, damit die bunten spaeter darueber gemalt werden
+                index = this.model.points.indexOf(polygonringe.get(i));
+                if(i%anzahlPunkteInRing > this.polygonringe.indexOf(extremR) || i >=anzahlPunkteInRing *2) {
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, greyMarker);
+                }
             }
-        }
-            for (int i = 0; i < model.points.size(); i++) {
+            for(int i=0; i<this.polygonringe.size();i++){
+                index = this.model.points.indexOf(polygonringe.get(i));
+                if(!(i%anzahlPunkteInRing > this.polygonringe.indexOf(extremR) || i >=anzahlPunkteInRing *2)){
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[farbe]);
+                    //canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, greyMarker);
+                }/*else{
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[farbe]);
+                }*/
+                if (this.pointsNb == 1) {
+                    canvas.drawCircle(this.point1.x, this.point1.y, 20, selectMarker);
+                }
+                if (this.pointsNb == 2) {
+                    canvas.drawCircle(this.point1.x, this.point1.y, 20, selectMarker);
+                    canvas.drawCircle(this.point2.x, this.point2.y, 20, selectMarker);
+                }
+                if (selectedPointIndex == index) {
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, selectMarker);
+                }
+                if (index == this.model.points.indexOf(this.extremR)) {
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[4]);
+                }
+                if(++punkte%anzahlPunkteInRing==0){
+                    if(++farbe>=pointMarkers.length){
+                        farbe=0;
+                    }
+                }
+            }
+            if(model.hasDeckelSpitze) {
+                index = this.model.points.indexOf(model.deckelspitze);
+                canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, greyMarker);
+                try {
+                    index = this.model.points.indexOf(model.bodenspitze);
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, greyMarker);
+                }catch(Exception e){
+
+                }
+            }
+        }else{
+            for (int i = 0; i < polygonringe.size(); i++) {
+                index = this.model.points.indexOf(polygonringe.get(i));
                 //if(points.get(i).z<=extremZ) {
                     /*if (selectedPointIndex == i) {
                         canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, selectMarker);
                     } else {*/
-                    if(!this.isFilled){
-                        if(!(i%anzahlPunkteInRing>this.model.points.indexOf(extremR)||i>=anzahlPunkteInRing*2)){
+                if (!this.isFilled) {
+                        /*if(!(i%anzahlPunkteInRing>this.model.points.indexOf(extremR)||i>=anzahlPunkteInRing*2)){
                             canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, pointMarkers[farbe]);
-                        }
-                    }else {
-                        canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, pointMarkers[farbe]);
-                    }
-                    if(i==this.model.points.indexOf(this.extremR)){
-                        canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, pointMarkers[4]);
-                    }
+                        }*/
+                } else {
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[farbe]);
+                }
+                if (index == this.model.points.indexOf(this.extremR)) {
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[4]);
+                }
 
-                    //}
-                    if (this.pointsNb == 1) {
-                        canvas.drawCircle(this.point1.x, this.point1.y, 20, selectMarker);
+                //}
+                if (this.pointsNb == 1) {
+                    canvas.drawCircle(this.point1.x, this.point1.y, 20, selectMarker);
+                }
+                if (this.pointsNb == 2) {
+                    canvas.drawCircle(this.point1.x, this.point1.y, 20, selectMarker);
+                    canvas.drawCircle(this.point2.x, this.point2.y, 20, selectMarker);
+                }
+                if (selectedPointIndex == index) {
+                    canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, selectMarker);
+                }
+                if (++punkte % anzahlPunkteInRing == 0) {
+                    if (++farbe >= pointMarkers.length) {
+                        farbe = 0;
                     }
-                    if (this.pointsNb == 2) {
-                        canvas.drawCircle(this.point1.x, this.point1.y, 20, selectMarker);
-                        canvas.drawCircle(this.point2.x, this.point2.y, 20, selectMarker);
-                    }
-                    if (selectedPointIndex == i) {
-                        canvas.drawCircle(pointsToDraw.get(i).x, pointsToDraw.get(i).y, 20, selectMarker);
-                    }
-                    if(++punkte%anzahlPunkteInRing==0){
-                        if(++farbe>=pointMarkers.length){
-                            farbe=0;
-                        }
-                    }
+                }
+
                 //}
             }
+            if(model.hasDeckelSpitze) {
+                index = this.model.points.indexOf(model.deckelspitze);
+                canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, spitzenMarker);
+                try {
+                    index = this.model.points.indexOf(model.bodenspitze);
+                    if(model.hasBodenSpitze) {
+                        canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, spitzenMarker);
+                    }else{
+                        if(--farbe==-1){
+                            farbe=pointMarkers.length-1;
+                        }
+                        canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[farbe]);
+                    }
+                }catch(Exception e){
+
+                }
+            }
+        }
             for(int i = 0; i < model.points.size(); i++){
                 canvas.drawText(""+i, pointsToDraw.get(i).x,pointsToDraw.get(i).y, new Paint(Color.CYAN));
             }
@@ -2105,7 +2544,39 @@ public class ImageCanvas extends ImageView {
         return index;
     }
 
-    public boolean[] dreiecke(){
+    public int hintenDeckel(P3D punkt){
+        Tri3D currentTri;
+        float max=Integer.MIN_VALUE;
+        int index=0;
+        for(int i=0;i<deckel.size();i++){
+            currentTri=deckel.get(i);
+            if(currentTri.getp0().compare(punkt)||currentTri.getp1().compare(punkt)||currentTri.getp0().compare(punkt)){
+                if(max<currentTri.getp0().z+currentTri.getp1().z+currentTri.getp2().z){
+                    max=currentTri.getp0().z+currentTri.getp1().z+currentTri.getp2().z;
+                    index=i;
+                }
+            }
+        }
+        return index;
+    }
+
+    public int hintenBoden(P3D punkt){
+        Tri3D currentTri;
+        float max=Integer.MIN_VALUE;
+        int index=0;
+        for(int i=0;i<boden.size();i++){
+            currentTri=boden.get(i);
+            if(currentTri.getp0().compare(punkt)||currentTri.getp1().compare(punkt)||currentTri.getp0().compare(punkt)){
+                if(max<currentTri.getp0().z+currentTri.getp1().z+currentTri.getp2().z){
+                    max=currentTri.getp0().z+currentTri.getp1().z+currentTri.getp2().z;
+                    index=i;
+                }
+            }
+        }
+        return index;
+    }
+
+    public boolean[] dreiecke(){ //sollte feststellen, welche Dreiecke gemalt werden sollen und welche nicht -> verursacht aber z.T. Loecher im Modell
         if(model.triangles.isEmpty()){
             return null;
         }

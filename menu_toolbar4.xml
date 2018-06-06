@@ -126,9 +126,16 @@
         app:showAsAction="never"
         android:visible="false"/>
 
-    <item android:id="@+id/action_reset"
+    <!--<item android:id="@+id/action_reset"
         android:title="Reset"
         app:showAsAction="never"
+        android:visible="false"/> -->
+
+    <item
+        android:id="@+id/action_reset"
+        android:icon="@android:drawable/ic_media_rew"
+        android:title="Reset"
+        app:showAsAction="always"
         android:visible="false"/>
 
     <item android:id="@+id/action_rotate"

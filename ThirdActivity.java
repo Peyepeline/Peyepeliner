@@ -24,6 +24,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Vector;
 
 public class ThirdActivity extends AppCompatActivity {
 
@@ -41,6 +42,7 @@ public class ThirdActivity extends AppCompatActivity {
     public Model3D MODEL = new Model3D();   //empty model to be built stepwise
 
     private ImageButton connectButton;
+    private ImageButton connectButton2;
     private ImageButton createRingsFromViews;
     private boolean connectInProgress = false;
     //TODO - make those 2 pts selectable...
@@ -63,6 +65,8 @@ public class ThirdActivity extends AppCompatActivity {
     public float verschSide;
     public float verschTop;
     public float scale;
+
+    public int anzahlSpitzen;
 
     private boolean scaled=false;
 
@@ -129,6 +133,18 @@ public class ThirdActivity extends AppCompatActivity {
                     bottomViewPath=getIntent().getStringExtra("PfadBild2");
                 }
             }
+        }
+
+        anzahlSpitzen = getIntent().getIntExtra("anzahlSpitzen",anzahlSpitzen);
+        switch(anzahlSpitzen){
+            case 0: MODEL.hasDeckelSpitze=false;
+                    MODEL.hasBodenSpitze=false;
+                    break;
+            case 1: MODEL.hasDeckelSpitze=true;
+                    MODEL.hasBodenSpitze=false;
+                    break;
+            case 2: MODEL.hasDeckelSpitze=true;
+                    MODEL.hasBodenSpitze=true;
         }
 
         /*if(getIntent().getFloatArrayExtra("Dreiecke")!=null){
@@ -247,9 +263,17 @@ public class ThirdActivity extends AppCompatActivity {
                                     connectButton.setClickable(false);
                                     connectButton.setAlpha(.5f);
                                     //if both extremPktLinks, extremPktRechts are set, enable button for the automatic creation of rings
-                                    createRingsFromViews.setEnabled(true);
-                                    createRingsFromViews.setClickable(true);
-                                    createRingsFromViews.setAlpha(.5f);
+                                    if(!MODEL.hasDeckelSpitze) {
+                                        createRingsFromViews.setEnabled(true);
+                                        createRingsFromViews.setClickable(true);
+                                        createRingsFromViews.setAlpha(.5f);
+                                    }else{
+                                        connectButton.setVisibility(View.GONE);
+                                        connectButton2.setVisibility(View.VISIBLE);
+                                        connectButton2.setEnabled(true);
+                                        connectButton2.setClickable(true);
+                                        connectButton2.setAlpha(.5f);
+                                    }
                                 }
                             }
                         }
@@ -266,6 +290,77 @@ public class ThirdActivity extends AppCompatActivity {
             }
         });
 
+        connectButton2 = (ImageButton) findViewById(R.id.connectButtonTA2);
+        connectButton2.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(!connectInProgress){
+                    topView.selectedPointIndex = -1;
+                    bottomView.selectedPointIndex = -1;
+                    p1ForConnect = null;
+                    p2ForConnect = null;
+
+                    connectInProgress = true;
+
+                    if((MODEL.deckelspitze == null)){
+                        Toast.makeText(ThirdActivity.this, "Markiere obere Spitze.", Toast.LENGTH_SHORT).show();
+                    }else{
+                        if(MODEL.hasBodenSpitze) {
+                            Toast.makeText(ThirdActivity.this, "Markiere untere Spitze", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    connectButton2.setImageResource(R.drawable.done);
+                }else{
+                    if(MODEL.deckelspitze==null) {
+                        if ((p1ForConnect != null) && (p2ForConnect != null)) {
+                            for (P3D pointInPoints3D : points3D) {
+                                if (pointInPoints3D.z == p1ForConnect.y) {
+                                    pointInPoints3D.x = p2ForConnect.x;
+                                    pointInPoints3D.y = p2ForConnect.y;
+                                    //TODO - is this byReference or byValue???
+                                    if (MODEL.deckelspitze == null) {
+                                        MODEL.deckelspitze = pointInPoints3D;
+                                        if (!MODEL.hasBodenSpitze) {
+                                            connectButton2.setEnabled(false);
+                                            connectButton2.setClickable(false);
+                                            connectButton2.setAlpha(.5f);
+                                            createRingsFromViews.setEnabled(true);
+                                            createRingsFromViews.setClickable(true);
+                                            createRingsFromViews.setAlpha(.5f);
+                                        }else{
+                                            topView.setVisibility(View.INVISIBLE);
+                                        }
+                                    }
+                                }
+                            }
+                            //clear connectInProgress state
+                            connectInProgress = false;
+                            connectButton2.setImageResource(R.drawable.fragezeichen);
+                            //if both extreme pts connected cross-View, disable (connect!)-button!
+
+                        } else {
+                            //error: select 1 pkt each!
+                            Toast.makeText(ThirdActivity.this, "Je 1 Punkt muss markiert sein!", Toast.LENGTH_LONG).show();
+                        }
+                    }else{
+                        if(MODEL.hasBodenSpitze){
+                            if(p2ForConnect!=null) {
+                                MODEL.bodenspitze = new P3D(p2ForConnect.x,p2ForConnect.y,MODEL.deckelspitze.z);
+                                //MODEL.bodenspitze.z = MODEL.deckelspitze.z;
+                                connectButton2.setEnabled(false);
+                                connectButton2.setClickable(false);
+                                connectButton2.setAlpha(.5f);
+                                createRingsFromViews.setEnabled(true);
+                                createRingsFromViews.setClickable(true);
+                                createRingsFromViews.setAlpha(.5f);
+                            }else{
+                                Toast.makeText(ThirdActivity.this, "Markiere unteren Punkt", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
 
         //onCreate: markiere topView(NICHTS), bottomView(NICHTS)
@@ -506,13 +601,27 @@ public class ThirdActivity extends AppCompatActivity {
         //FIRST:
         // create RING
         //first populate point list
+        P3D copyDS = new P3D(0,0,0);
+        P3D copyBS = new P3D(0,0,0);
+        if(MODEL.hasDeckelSpitze){
+            copyDS=new P3D(MODEL.deckelspitze.x,MODEL.deckelspitze.y,MODEL.deckelspitze.z);
+            if(MODEL.hasBodenSpitze){
+                copyBS = new P3D(MODEL.bodenspitze.x,MODEL.bodenspitze.y,MODEL.bodenspitze.z);
+            }
+        }
         topView.populatePointList();
         //then create ring via dedicated method
         originalRing.clear();
         originalRing = MODEL.getRing(topView.points);
         triangles();
         float k2=1/getK(originalRing.get(0));
+        if(MODEL.hasDeckelSpitze){
+            spitzen1(originalRing,k2);
+        }
         scaleRing(originalRing,k2);
+        if(MODEL.hasDeckelSpitze) {
+            spitzen2(originalRing);
+        }
         //originalRing now contains the correctly rotated Ring taken from topView
         //MODEL.getRing(topView.points);
         //0->extremLinks
@@ -542,33 +651,48 @@ public class ThirdActivity extends AppCompatActivity {
         vector RToPoint = new vector(0);
         float halfDistLR = (float)LR.length()/2;
         float k = 0;
+        boolean neuerRing;
         //scaleRing(originalRing,getK(originalRing.get(0)));
         //for each p left of bisector (dist<0)
         for (P3D p : bottomView.points) {
+            neuerRing=true;
             //if(calcDistP3DBisector(p) < 0){ //p is LEFT of bisector
             //=======================edited===========================
             LToPoint.setVector(bottomViewLinks, p);
             RToPoint.setVector(bottomViewRechts, p);
             //=======================edited===========================
-            if(LToPoint.length() < RToPoint.length()&&(!(p.x==extremLinksCopy.x&&p.y==extremLinksCopy.y))/*&&(!p.compare(extremPtRechts))*/){
+            if(LToPoint.length() < RToPoint.length()&&(!(p.x==extremLinksCopy.x&&p.y==extremLinksCopy.y))/*&&(!p.compare(extremPtRechts))*/) {
                 //QUATSCH: use dreiecksungleichung!
                 //for this point, create new ring, scale it, and move it to have newRing(0) coincide with the point p
                 //newRing = clone of originalRing
-                ArrayList<P3D> newRing = new ArrayList<P3D>();
-                newRing.clear();
-                for(P3D point : originalRing){
-                    newRing.add(new P3D(point));
+                if (MODEL.hasDeckelSpitze) {
+                    if (MODEL.hasBodenSpitze) {
+                        if ((p.x == copyDS.x && p.y == copyDS.y) ||(p.x==copyBS.x && p.y==copyBS.y) ) {
+                            neuerRing = false;
+                        }
+                    } else {
+                        if (p.x == copyDS.x && p.y == copyDS.y) {
+                            neuerRing = false;
+                        }
+                    }
                 }
-                //calculate skalar k
-                //k = Math.abs(calcDistP3DBisector(p))/halfDistLR;
-                k=getK(p);
-                //scale newRing
-                scaleRing(newRing, k);
+                if (neuerRing) {
+                    ArrayList<P3D> newRing = new ArrayList<P3D>();
+                    newRing.clear();
+                    for (P3D point : originalRing) {
+                        newRing.add(new P3D(point));
+                    }
+                    //calculate skalar k
+                    //k = Math.abs(calcDistP3DBisector(p))/halfDistLR;
+                    k = getK(p);
+                    //scale newRing
+                    scaleRing(newRing, k);
 
-                //adjustPos newRing
-                newRing=adjustRingPos(newRing, p);
-                //add points of newRing to MODEL
-                MODEL.addPointListToMesh(newRing);
+                    //adjustPos newRing
+                    newRing = adjustRingPos(newRing, p);
+                    //add points of newRing to MODEL
+                    MODEL.addPointListToMesh(newRing);
+                }
             }
         }
         //==================================================
@@ -626,6 +750,58 @@ public class ThirdActivity extends AppCompatActivity {
     public void triangles(){
         try {
             Tri3D currentTri = topView.getFirstTriangle();
+            int index0;
+            int index1;
+            int index2;
+            P3D p0;
+            P3D p1;
+            P3D p2;
+            while (currentTri != null) {
+                index0=-1;
+                index1=-1;
+                index2=-1;
+                p0 = new P3D(currentTri.getp0().x, 0, currentTri.getp0().y);
+                p1 = new P3D(currentTri.getp1().x, 0, currentTri.getp1().y);
+                p2 = new P3D(currentTri.getp2().x, 0, currentTri.getp2().y);
+                for(int i=0;i<originalRing.size();i++){
+                    if(originalRing.get(i).compare(p0)){
+                        index0 = i;
+                    }
+                    if(originalRing.get(i).compare(p1)){
+                        index1 = i;
+                    }
+                    if(originalRing.get(i).compare(p2)){
+                       index2 = i;
+                    }
+                }
+                if(index0==-1){
+                    p0=MODEL.deckelspitze;
+                }else{
+                    p0=originalRing.get(index0);
+                }
+                if(index1==-1){
+                    p1=MODEL.deckelspitze;
+                }else{
+                    p1=originalRing.get(index1);
+                }
+                if(index2==-1){
+                    p2=MODEL.deckelspitze;
+                }else{
+                    p2=originalRing.get(index2);
+                }
+                triangles.add(new Tri3D(p0, p1, p2));
+                currentTri =currentTri.getNextTriangle();
+            }
+        }catch (NullPointerException e){
+            Toast.makeText(ThirdActivity.this, "NullPointerException triangles()", Toast.LENGTH_SHORT).show();
+        }catch (IndexOutOfBoundsException e){
+            Toast.makeText(ThirdActivity.this, "IndexOutOfBoundsException triangle()", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void trianglesAlt(){
+        try {
+            Tri3D currentTri = topView.getFirstTriangle();
             int index0=0;
             int index1=0;
             int index2=0;
@@ -641,7 +817,7 @@ public class ThirdActivity extends AppCompatActivity {
                         index1 = i;
                     }
                     if(originalRing.get(i).compare(p2)){
-                       index2 = i;
+                        index2 = i;
                     }
                 }
                 triangles.add(new Tri3D(originalRing.get(index0), originalRing.get(index1), originalRing.get(index2)));
@@ -729,10 +905,10 @@ public class ThirdActivity extends AppCompatActivity {
     }
 
     public void nextActivity(){
-        ArrayList<P3D> kompletterRing = new ArrayList<P3D>();
+        /*ArrayList<P3D> kompletterRing = new ArrayList<P3D>();
         for(int i=0;i<MODEL.points.size();i++){
             kompletterRing.add(MODEL.points.get(i));
-        }
+        }*/
 
         /*topView.populatePointList();
         MODEL.addPointListToMesh(topView.points);*/
@@ -770,23 +946,31 @@ public class ThirdActivity extends AppCompatActivity {
         intent.putExtra("p0", indexTrianglep0);
         intent.putExtra("p1", indexTrianglep1);
         intent.putExtra("p2", indexTrianglep2);
-
-        int allePunkteImRing = kompletterRing.size();
+        int allePunkteImRing;
+        if(MODEL.hasDeckelSpitze){
+            if(MODEL.hasBodenSpitze){
+                allePunkteImRing = MODEL.points.size()-2;
+            }else{
+                allePunkteImRing = MODEL.points.size()-1;
+            }
+        }else {
+             allePunkteImRing = MODEL.points.size();
+        }
         intent.putExtra("allePunkteImRing", allePunkteImRing);
         intent.putExtra("anzahlPunkteImRing", originalRing.size());
         intent.putExtra("anzahlRinge", allePunkteImRing/originalRing.size());
 
-        int[] indexRing = new int[allePunkteImRing];
+        /*int[] indexRing = new int[allePunkteImRing];
         for(int i=0;i<allePunkteImRing;i++){
             indexRing[i]=this.MODEL.points.indexOf(kompletterRing.get(i));
         }
-        intent.putExtra("kompletterRing",indexRing);
+        intent.putExtra("kompletterRing",indexRing);*/
         //TEST:
         int index=-1;
         float maxX=originalRing.get(0).x;
         for(int i=1;i<originalRing.size();i++){
             if(maxX<originalRing.get(i).x){
-                index=i;
+                index=MODEL.points.indexOf(originalRing.get(i));
                 maxX=originalRing.get(i).x;
             }
         }
@@ -800,6 +984,14 @@ public class ThirdActivity extends AppCompatActivity {
         intent.putExtra("verschSide",verschSide);
         intent.putExtra("verschTop",verschTop);
         intent.putExtra("scale",1/scale);
+        intent.putExtra("deckelSpitze",MODEL.hasDeckelSpitze);
+        intent.putExtra("bodenSpitze",MODEL.hasBodenSpitze);
+        if(MODEL.hasDeckelSpitze) {
+            intent.putExtra("IndexDeckelSpitze", MODEL.points.indexOf(MODEL.deckelspitze));
+        }
+        if(MODEL.hasBodenSpitze) {
+            intent.putExtra("IndexBodenSpitze", MODEL.points.indexOf(MODEL.bodenspitze));
+        }
         startActivity(intent);
         return;
     }
@@ -872,6 +1064,56 @@ public class ThirdActivity extends AppCompatActivity {
             pointInRing.aV(v);
         }
         return scaledRing;
+    }
+
+    public void spitzen1(ArrayList<P3D> ring, float skalar){
+        float cX = 0;
+        float cY = 0;
+        float cZ = 0;
+        int nbPts = ring.size();
+        for(P3D p : ring){
+            cX += p.x;
+            cY += p.y;
+            cZ += p.z;
+        }
+        cX = cX/nbPts;
+        cY = cY/nbPts;
+        cZ = cZ/nbPts;
+        P3D c = new P3D(cX, cY, cZ);
+
+        c.y = MODEL.deckelspitze.y;
+
+        vector v = new vector(0, 0, 0);
+        v.setVector(c, MODEL.deckelspitze);
+        v.scaleVector(skalar);
+        MODEL.deckelspitze.x = c.x + v.x;
+        MODEL.deckelspitze.y = c.y + v.y;
+        MODEL.deckelspitze.z = c.z + v.z;
+        if(MODEL.hasBodenSpitze){
+
+            c.y= MODEL.bodenspitze.y;
+
+            v.setVector(c, MODEL.bodenspitze);
+            v.scaleVector(skalar);
+            MODEL.bodenspitze.x = c.x + v.x;
+            MODEL.bodenspitze.y = c.y + v.y;
+            MODEL.bodenspitze.z = c.z + v.z;
+        }
+
+    }
+
+    public void spitzen2(ArrayList<P3D> ring){
+        /*vector v = new vector(0,0,0);
+        v.setVector(ring.get(0), MODEL.deckelspitze);
+        v.x=0;v.z=0;
+        MODEL.deckelspitze.aV(v);*/
+        MODEL.addPointToMesh(MODEL.deckelspitze);
+        if(MODEL.hasBodenSpitze){
+            /*v.setVector(ring.get(0), MODEL.bodenspitze);
+            v.x=0;v.z=0;
+            MODEL.bodenspitze.aV(v);*/
+            MODEL.addPointToMesh(MODEL.bodenspitze);
+        }
     }
 
 }

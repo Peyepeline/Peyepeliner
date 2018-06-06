@@ -56,6 +56,14 @@
             android:src="@drawable/fragezeichen" />
 
         <ImageButton
+            android:id="@+id/connectButtonTA2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:src="@drawable/fragezeichen"
+            android:visibility="gone"/>
+
+        <ImageButton
             android:id="@+id/createRingsFromViewsButtonTA"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

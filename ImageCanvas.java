@@ -26,57 +26,7 @@ import java.util.ArrayList;
 /**
  * Created by Core on 27.09.2017.
  */
-class Dreieck{
-    Path path;
-    float z;
-    Paint paint;
-    int pos;
-    float x,y;
-    public Dreieck(Tri3D tri, Path path, int pos){
-        this.path=path;
-        this.z = tri.getp0().z+tri.getp1().z+tri.getp2().z;
-        this.x = tri.getp0().x;
-        this.y = tri.getp0().y;
-        //this.z = Math.max(tri.getp0().z, Math.max(tri.getp1().z, tri.getp2().z));
-        paint=tri.getColour();
-        this.pos = pos;
-    }
-    /*Dreieck currentDrei;
-            Dreiecke.clear();
-            int position;
-            while (i<model.triangles.size()) {
-                currentTri = model.triangles.get(i);
-                currentDrei = new Dreieck(currentTri, pathify(currentTri), i++);
-                position = Dreiecke.size();
-                for (int j = Dreiecke.size() - 1; j >= 0; j--) {
-                    if (currentDrei.z < Dreiecke.get(j).z) {
-                        break;
-                    } else {
-                        position = j;
-                    }
-                }
-                Dreiecke.add(position, currentDrei);
-                //currentTri = currentTri.getNextTriangle();
-            }
-            isSorted();
-            Dreieck d;
-            for(int h=0;h<Dreiecke.size();h++){
-                d=Dreiecke.get(h);
-                canvas.drawPath(d.path, d.paint);   //draw filled Tri
-                canvas.drawPath(d.path, contourPaint); //draw Tri borders
-                //canvas.drawText(d.pos+"",d.x,d.y,new Paint(Color.CYAN));
-            }*/
-}
 
-/* <activity android:name=".FourthActivity"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:parentActivityName=".ThirdActivity" >
-            <!-- The meta-data tag is required if you support API level 15 and lower -->
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ThirdActivity" />
-        </activity>*/
 
 public class ImageCanvas extends ImageView {
 
@@ -2133,19 +2083,10 @@ public class ImageCanvas extends ImageView {
             return;
         }*/
 
-        //canvas.drawRect(getTopRechteck(), null);
-        /*Bitmap testBitmap=Bitmap.createBitmap(this.getWidth(),this.getHeight(),Bitmap.Config.ARGB_8888);
-        Bitmap herz = BitmapFactory.decodeResource(getResources(),R.drawable.herz);
-        Canvas canvas2 = new Canvas(testBitmap);
-        canvas2.rotate(90,herz.getWidth()/2,herz.getHeight()/2);
-        canvas2.drawBitmap(herz,0,0,null);
-        canvas2.drawPoint(0,0,greyMarker);
-        canvas.drawBitmap(testBitmap,new Rect(0,0,herz.getWidth(),herz.getHeight()),new RectF(0,0,this.getWidth(),this.getHeight()),null);*/
+
         int punkte=0;
         int farbe=0;
-        /*canvas.drawCircle(this.getWidth()/2, 0, 20, greyMarker);
-        canvas.drawCircle(this.getWidth(), 0, 20, greyMarker);
-        canvas.drawCircle((model.points.get(0).x+extremR.x)/2, 0, 20, selectMarker);*/
+
         int index;
         if (!this.isFilled) {
             /*for (int i = 0; i < model.points.size(); i++) {
@@ -2177,9 +2118,9 @@ public class ImageCanvas extends ImageView {
                 if (selectedPointIndex == index) {
                     canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, selectMarker);
                 }
-                if (index == this.model.points.indexOf(this.extremR)) {
+                /*if (index == this.model.points.indexOf(this.extremR)) {
                     canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[4]);
-                }
+                }*/
                 if(++punkte%anzahlPunkteInRing==0){
                     if(++farbe>=pointMarkers.length){
                         farbe=0;
@@ -2210,9 +2151,9 @@ public class ImageCanvas extends ImageView {
                 } else {
                     canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[farbe]);
                 }
-                if (index == this.model.points.indexOf(this.extremR)) {
+                /*if (index == this.model.points.indexOf(this.extremR)) {
                     canvas.drawCircle(pointsToDraw.get(index).x, pointsToDraw.get(index).y, 20, pointMarkers[4]);
-                }
+                }*/
 
                 //}
                 if (this.pointsNb == 1) {
@@ -2251,34 +2192,15 @@ public class ImageCanvas extends ImageView {
                 }
             }
         }
-            for(int i = 0; i < model.points.size(); i++){
+            /*for(int i = 0; i < model.points.size(); i++){
                 canvas.drawText(""+i, pointsToDraw.get(i).x,pointsToDraw.get(i).y, new Paint(Color.CYAN));
-            }
-            /*if(true){
-                return;
             }*/
+
 
             int i=0;
             Tri3D currentTri;
             PathShape shapath;
-            /*if(!xy){
-                boolean[] dreiecke = dreiecke();
-                for(int h=0;h<model.triangles.size();h++){
-                    shapath = new PathShape(pathify(model.triangles.get(h)), this.getWidth(), this.getHeight());
-                    shapath.resize(this.getWidth(), this.getHeight());
-                    shapath.draw(canvas, shapaint);
-                }
-                for(int h=0;h<model.triangles.size();h++){
-                    if(dreiecke[h]==true) {
-                        currentTri = model.triangles.get(h);
-                        //canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
-                        // currentTri = currentTri.getNextTriangle();
-                    }
-                }
-                //textures(dreiecke);
-                return;
-            }*/
+
             try{
                 for(int j=0;j<Dreiecke.size();j++){
                     currentTri = Dreiecke.get(j);
@@ -2291,216 +2213,7 @@ public class ImageCanvas extends ImageView {
                     }
                     canvas.drawPath(pathify(currentTri), contourPaint);
                 }
-                /*float durchschnittDeckel = this.model.points.get(0).z; //points=Ring
-                float maxDeckel = this.model.points.get(0).z; //points=Ring
-                //float durchschnittBoden = this.model.points.get(this.model.points.size()-anzahlPunkteInRing).z;
-                float durchschnittBoden = this.model.points.get(anzahlPunkteInRing).z;
-                int maxPos=0;
-                for(int j=1;j<anzahlPunkteInRing;j++){
-                    if(maxDeckel<this.model.points.get(j).z){
-                        maxPos=j;
-                        maxDeckel=this.model.points.get(j).z;
-                    }
-                    //if(maxBoden<this.model.points.get(this.model.points.size()-anzahlPunkteInRing+j).z){
-                    durchschnittBoden=durchschnittBoden+this.model.points.get(anzahlPunkteInRing+j).z;
-                    durchschnittDeckel=durchschnittDeckel+this.model.points.get(j).z;
-                    //}
-                }
-                durchschnittBoden=durchschnittBoden/anzahlPunkteInRing;
-                durchschnittDeckel=durchschnittDeckel/anzahlPunkteInRing;
-                if(durchschnittBoden>durchschnittDeckel){
-                    for(int j=0;j<boden.size();j++){
-                        currentTri = boden.get(j);
-                        if(textures){
-                            if(photoTexture){
-                                /*shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, sideViewPaint);*/
-                                /*canvas.drawPath(pathify(currentTri), currentTri.getColour());
-                            }else {
-                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, shapaint);
-                            }
-                        }else {
-                            canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                        }
-                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
-                    }
-                }else{
-                    //top();
-                    for(int j=0;j<deckel.size();j++){
-                        currentTri = deckel.get(j);
-                        if(textures){
-                            if(photoTexture){
-                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, topViewPaint);
-                            }else {
-                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, shapaint);
-                            }
-                        }else {
-                            canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                        }
-                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
-                    }
-                }
-                seiten.clear();
-                for(int h=2*boden.size();h<model.triangles.size();h++){
-                    /*if(h%2==0){
-                        model.triangles.get(h).setColour(Color.GREEN);
-                    }else{
-                        model.triangles.get(h).setColour(Color.BLUE);
-                    }*/
-                    /*seiten.add(model.triangles.get(h)); //nur zu Testzwecken, dauerndes Umaendern der Liste unnoetig!
-                }
-                boolean[] dreiecke = new boolean[seiten.size()];
-                for(int h=0;h<dreiecke.length;h++){
-                    dreiecke[h]=false;
-                }
-                if(seiten.size()>0) {
-                    //side();
-                    //canvas.drawRect(getSeitenRechteck(),new Paint(Color.CYAN));
-                    int hinten = hinten(model.points.get(maxPos));
-                    i = 0;
-                    int ebenen = this.model.points.size() / anzahlPunkteInRing - 1;
-                    int next;
-                    for (int j = 0; j < ebenen; j++) {
-                        next = hinten + (j * anzahlPunkteInRing * 2);
-                        if(next>=seiten.size()||i>=seiten.size()){
-                            break;
-                        }
-                        currentTri = seiten.get(next);
-                        dreiecke[next]=true;
-                        if(textures){
-                            if(photoTexture){
-                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, sideViewPaint);
-                            }else {
-                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, shapaint);
-                            }
-                        }else {
-                            canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                        }
-                        canvas.drawPath(pathify(currentTri), contourPaint);
-                        i++;
-                    }
-                    int weiter1 = hinten, weiter2 = hinten;
-                    //for (int h=0;h<2*anzahlPunkteInRing;h++) {
-                    while(i<seiten.size()){
-                        /*if(i>=seiten.size()){
-                            break;
-                        }*/
-                        /*if (--weiter1 < 0) {
-                            weiter1 = (anzahlPunkteInRing * 2)-1;
-                        }
-                        if (++weiter2 >= anzahlPunkteInRing * 2) {
-                            weiter2 = 0;
-                        }
-                        for(int j = 0; j < ebenen; j++){
-                            next = weiter1 + (j * anzahlPunkteInRing * 2);
-                            if(next<seiten.size()&&dreiecke[next]==false) {
-                                currentTri = seiten.get(next);
-                                dreiecke[next]=true;
-                                //canvas.drawPath(pathify(currentTri), currentTri.getColour());
-                                if(textures){
-                                    if(photoTexture){
-                                        shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                        shapath.resize(this.getWidth(), this.getHeight());
-                                        shapath.draw(canvas, sideViewPaint);
-                                    }else {
-                                        shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                        shapath.resize(this.getWidth(), this.getHeight());
-                                        shapath.draw(canvas, shapaint);
-                                    }
-                                }else {
-                                    canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                                }
-                                canvas.drawPath(pathify(currentTri), contourPaint);
-                                i++;
-                                if (i == seiten.size()) {
-                                    break;
-                                }
-                            }
-                            next = weiter2 + (j * anzahlPunkteInRing * 2);
-                            if(next<seiten.size()&&dreiecke[next]==false) {
-                                currentTri = seiten.get(next);
-                                dreiecke[next]=true;
-                                if(textures){
-                                    if(photoTexture){
-                                        shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                        shapath.resize(this.getWidth(), this.getHeight());
-                                        shapath.draw(canvas, sideViewPaint);
-                                    }else {
-                                        shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                        shapath.resize(this.getWidth(), this.getHeight());
-                                        shapath.draw(canvas, shapaint);
-                                    }
-                                }else {
-                                    canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                                }
-                                canvas.drawPath(pathify(currentTri), contourPaint);
-                                i++;
-                                if (i == seiten.size()) {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
 
-                int nicht = 0;
-                for(int h=0;h<dreiecke.length;h++){
-                    if(dreiecke[h]==false){
-                        nicht++;
-                    }
-                }
-                if(nicht>0){
-                    canvas.drawText(nicht+"", 50, 50, new Paint(Color.RED));
-                }
-
-                if(durchschnittBoden<=durchschnittDeckel){
-                    for(int j=0;j<boden.size();j++){
-                        currentTri = boden.get(j);
-                        if(textures){
-                            if(photoTexture) {
-                                canvas.drawPath(pathify(currentTri), currentTri.getColour());
-                            }else {
-                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, shapaint);
-                            }
-                        }else {
-                            canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                        }
-                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
-                    }
-                }else{
-                    //top();
-                    for(int j=0;j<deckel.size();j++){
-                        currentTri = deckel.get(j);
-                        if(textures){
-                            if(photoTexture){
-                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, topViewPaint);
-                            }else {
-                                shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                                shapath.resize(this.getWidth(), this.getHeight());
-                                shapath.draw(canvas, shapaint);
-                            }
-                        }else {
-                            canvas.drawPath(pathify(currentTri), currentTri.getColour());   //draw filled Tri
-                        }
-                        canvas.drawPath(pathify(currentTri), contourPaint); //draw Tri borders
-                    }
-                }
-            */
             }catch (Exception e) {
                 contourPaint.setColor(Color.RED);
                 int h=0;
@@ -2513,18 +2226,6 @@ public class ImageCanvas extends ImageView {
                 contourPaint.setColor(Color.BLACK);
             }
 
-            //textures();
-        /*currentTri=model.triangles.get(0);
-        canvas.drawRect(origSideRect,currentTri.getColour());
-        canvas.drawRect(getSeitenRechteck(),currentTri.getColour());
-        canvas.drawPoint((float)sideViewBitmap.getWidth(),(float)sideViewBitmap.getHeight(),selectMarker);*/
-        /*int weite1=this.getWidth();
-        int hoehe1=this.getHeight();
-        int weite2=sideViewBitmap.getWidth();
-        int hoehe2=sideViewBitmap.getHeight();
-        int weite3=sideViewBitmap.getScaledWidth(Resources.getSystem().getDisplayMetrics());
-        int hoehe3=sideViewBitmap.getScaledHeight(Resources.getSystem().getDisplayMetrics());
-        int diff=weite1-weite2;*/
 
     }
 

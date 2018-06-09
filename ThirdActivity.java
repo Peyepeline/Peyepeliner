@@ -463,17 +463,21 @@ public class ThirdActivity extends AppCompatActivity {
         float bitmaphoehe = bottomView.getDrawable().getIntrinsicHeight();
         float verhaeltnis = bitmaphoehe/bitmapbreite;
         float neuebreite;
+        float obererStreifen;
 
-        if(verhaeltnis>=1) { //wenn Bild hoeher als breit ist
+        if(verhaeltnis>1) { //wenn Bild hoeher als breit ist
             neuebreite = neueHoehe / verhaeltnis;
+            obererStreifen=0;
         }else{
             neuebreite=alteBreite; //wenn Bild breiter als hoch ist
+            neueHoehe=verhaeltnis*neuebreite;
+            obererStreifen=(bottomView.getHeight()-neueHoehe)/2;
         }
 
         scalefactor = neuebreite / origBreite;
 
         verschiebeFactorX = (alteBreite-neuebreite)/2;
-        verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
+        verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2-obererStreifen;
 
         verschSide=verschiebeFactorY;
         scale=scalefactor;
@@ -488,13 +492,17 @@ public class ThirdActivity extends AppCompatActivity {
         verhaeltnis = bitmaphoehe/bitmapbreite;
 
         if(verhaeltnis>1) {
+            neueHoehe=topView.getHeight();
             neuebreite = neueHoehe / verhaeltnis;
+            obererStreifen=0;
         }else{
             neuebreite=alteBreite;
+            neueHoehe=verhaeltnis*neuebreite;
+            obererStreifen=(topView.getHeight()-neueHoehe)/2;
         }
         scalefactor = neuebreite/origBreite;
         verschiebeFactorX = (alteBreite-neuebreite)/2;
-        verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
+        verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2-obererStreifen;
 
         verschTop=verschiebeFactorY;
 

@@ -448,7 +448,7 @@ public class ThirdActivity extends AppCompatActivity {
         }
         super.onWindowFocusChanged(hasFocus);
 
-        float neueHoehe = bottomView.getHeight();
+        float neueHoehe = bottomView.getHeight(); //falls Bild hochkant ist
         float alteBreite = bottomView.getWidth();
 
         float origHoehe = (float) getIntent().getIntExtra("OrigAbmessY",1);
@@ -462,10 +462,16 @@ public class ThirdActivity extends AppCompatActivity {
         float bitmapbreite = bottomView.getDrawable().getIntrinsicWidth();
         float bitmaphoehe = bottomView.getDrawable().getIntrinsicHeight();
         float verhaeltnis = bitmaphoehe/bitmapbreite;
+        float neuebreite;
 
-        float neuebreite = neueHoehe/verhaeltnis;
+        if(verhaeltnis>=1) { //wenn Bild hoeher als breit ist
+            neuebreite = neueHoehe / verhaeltnis;
+        }else{
+            neuebreite=alteBreite; //wenn Bild breiter als hoch ist
+        }
 
-        scalefactor = neuebreite/origBreite;
+        scalefactor = neuebreite / origBreite;
+
         verschiebeFactorX = (alteBreite-neuebreite)/2;
         verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;
 
@@ -481,8 +487,11 @@ public class ThirdActivity extends AppCompatActivity {
         bitmaphoehe = topView.getDrawable().getIntrinsicHeight();
         verhaeltnis = bitmaphoehe/bitmapbreite;
 
-        neuebreite = neueHoehe/verhaeltnis;
-
+        if(verhaeltnis>1) {
+            neuebreite = neueHoehe / verhaeltnis;
+        }else{
+            neuebreite=alteBreite;
+        }
         scalefactor = neuebreite/origBreite;
         verschiebeFactorX = (alteBreite-neuebreite)/2;
         verschiebeFactorY = (origHoehe-(verhaeltnis*origBreite))/2;

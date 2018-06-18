@@ -419,11 +419,11 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         this.figure.changePointsToDraw();
     }
 
-    public void rebuildPointsAlt(float[] x, float[] y, float[] z){
+    /*public void rebuildPointsAlt(float[] x, float[] y, float[] z){
         for(int i=0;i<x.length;i++){
             figure.model.addPointToMesh(new P3D(x[i],y[i],z[i]));
         }
-    }
+    }*/
 
     public void rebuildPoints(float[] x, float[] y, float[] z){
         for(int i=0;i<x.length;i++){
@@ -460,7 +460,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         figure.polygonringe = this.polygonringe;
     }
 
-    public void setExtreme(){
+    /*public void setExtreme(){
         this.figure.extremL = this.polygonringe.get(0);
         this.figure.extremR = this.polygonringe.get(0);
         for(int i=1;i<anzahlPunkteInRing;i++){
@@ -471,7 +471,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
                 this.figure.extremR=this.polygonringe.get(i);
             }
         }
-    }
+    }*/
 
     /*public void mockup2(){
         int maxHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
@@ -865,7 +865,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         //figure.invalidate();
     }
 
-    public void fillSideOld(){
+    /*public void fillSideOld(){
         //Tri3D currentTriangle = figure.firstNewTriangle;
         int anzahl= figure.model.triangles.size();
 
@@ -913,7 +913,7 @@ public class FourthActivity extends AppCompatActivity implements AlertPositiveLi
         figure.setOperationID(1);
         figure.updateStuff();
         //figure.invalidate();
-    }
+    }*/
 
     public void fillBottom(){ //kopiere die Dreiecke des "Deckels" des Modells (TopView) auf den Boden des Modells
         int abstandLetzterRing=this.polygonringe.size()-this.anzahlPunkteInRing;

@@ -214,7 +214,7 @@ public class ShapeCanvas extends ImageView {
         //try: 50?
     }
 
-    public void addTri(P3D point1, P3D point2, P3D point3){ // wird in rebuildFormerTriangle aufgerufen
+    /*public void addTri(P3D point1, P3D point2, P3D point3){ // wird in rebuildFormerTriangle aufgerufen
 
         Tri3D newTriangle = new Tri3D(point1, point2, point3, newTriangleId++);
 
@@ -231,7 +231,7 @@ public class ShapeCanvas extends ImageView {
         //TODO - adjust connectTri(tri) for 1080x1920-screen resolution (10px too small) - Wurstfingersyndrom
         connectTri(newTriangle);    //works, BUT: need to adjust distance values regarding screenResolution...
         //try: 50?
-    }
+    }*/
 
     public void addTri2(P3D point1, P3D point2, P3D point3){ // wird in rebuildFormerTriangle aufgerufen
 
@@ -588,11 +588,11 @@ public class ShapeCanvas extends ImageView {
         return pointArray;
     }
 
-    public void rebuildFormerPoints(float[] XPoints, float[] YPoints, float ZPoints[]){ //falls es in einer früheren Activity schon Punkte gab
+    /*public void rebuildFormerPoints(float[] XPoints, float[] YPoints, float ZPoints[]){ //falls es in einer früheren Activity schon Punkte gab
         for(int i=0;i<XPoints.length;i++){
             this.points.add(new P3D(XPoints[i],YPoints[i],ZPoints[i]));
         }
-    }
+    }*/
 
     public void rebuildFormerPoints(float[] XPoints, float[] YPoints, float ZPoints[], float scale, float verschX, float verschY){ //falls es in einer früheren Activity schon Punkte gab
         for(int i=0;i<XPoints.length;i++){
@@ -619,7 +619,7 @@ public class ShapeCanvas extends ImageView {
         return triangleArray;
     }
 
-    public void rebuildFormerTriangles(float[] formerTriangles){ //falls es in einer früheren Activity schon Dreiecke gab
+    /*public void rebuildFormerTriangles(float[] formerTriangles){ //falls es in einer früheren Activity schon Dreiecke gab
         for(int i=0;i<formerTriangles.length;i++){
             P3D p0 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i++]);
             P3D p1 = new P3D(formerTriangles[i++], formerTriangles[i++],formerTriangles[i++]);
@@ -627,7 +627,7 @@ public class ShapeCanvas extends ImageView {
             this.addTri2(p0, p1, p2);
         }
         invalidate();
-    }
+    }*/
 
     public void rebuildFormerTriangles(float[] formerTriangles, float scale, float verschX, float verschY){ //falls es in einer früheren Activity schon Dreiecke gab
         for(int i=0;i<formerTriangles.length;i++){

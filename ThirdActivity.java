@@ -517,7 +517,7 @@ public class ThirdActivity extends AppCompatActivity {
         moveTaskToBack(true);
     }
 
-    public void setYCoordinate(){
+    /*public void setYCoordinate(){
         //Koerper, bei denen Oben und Unten gleich ist?
         //ArrayList<P3D> mitY = new ArrayList<P3D>(); //Liste noetig?
         ArrayList<P3D> ohneY = new ArrayList<P3D>();
@@ -567,10 +567,10 @@ public class ThirdActivity extends AppCompatActivity {
             }
             angle=0;
         }
-    }
+    }*/
 
 
-    public int angle(float x1, float y1, float x2, float y2){
+    /*public int angle(float x1, float y1, float x2, float y2){
         int xx1 = (int) x1;
         int yy1 = (int) y1;
         int xx2 = (int) x2;
@@ -579,7 +579,7 @@ public class ThirdActivity extends AppCompatActivity {
         double laenge1 = Math.sqrt(xx1^2+yy1^2);
         double laenge2 = Math.sqrt(xx2^2+yy2^2);
         return (int) Math.toDegrees(Math.acos(skalarprod/(laenge1*laenge2)));
-    }
+    }*/
 
     //private void TVPointIterate(){
         //topView.populatePointList(); already done in onCreate()
@@ -719,9 +719,9 @@ public class ThirdActivity extends AppCompatActivity {
         nextActivity();
     }
 
-    public void sort(){
+    /*public void sort(){
         ArrayList<P3D> sortedOriginalRing= new ArrayList<P3D>();
-    }
+    }*/
 
     /*public float getK(P3D p){ // gibt immer k gleich oder fast gleich 1 zureuck
         P3D m = new P3D((extremPtLinks.x+extremPtRechts.x)/2,(extremPtLinks.y+extremPtRechts.y)/2, 0);
@@ -816,7 +816,7 @@ public class ThirdActivity extends AppCompatActivity {
         }
     }
 
-    public void trianglesAlt(){
+    /*public void trianglesAlt(){
         try {
             Tri3D currentTri = topView.getFirstTriangle();
             int index0=0;
@@ -845,7 +845,7 @@ public class ThirdActivity extends AppCompatActivity {
         }catch (IndexOutOfBoundsException e){
             Toast.makeText(ThirdActivity.this, "IndexOutOfBoundsException", Toast.LENGTH_SHORT).show();
         }
-    }
+    }*/
 
     //case 0: TV only contains 1 ring (no spike.)
     //ergo

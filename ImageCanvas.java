@@ -475,7 +475,7 @@ public class ImageCanvas extends ImageView {
         //invalidate();
     }
 
-    public PointF schwerpunkt(int ring){ //Quelle Wikipedia
+    public PointF schwerpunkt(int ring){
         float flaeche=0;
         PointF schwerpunkt = new PointF(0,0); //x und z Koordinate
         P3D currentPoint1, currentPoint2;
@@ -603,7 +603,7 @@ public class ImageCanvas extends ImageView {
         }
     }
 
-    public P3D getClosestPoint4Alt(PointF pos){
+    /*public P3D getClosestPoint4Alt(PointF pos){
         //this.populatePointList();
         P3D currPt = this.model.points.get(0);
         double currAbstand = abstand(pos, currPt.getPointF());
@@ -623,7 +623,7 @@ public class ImageCanvas extends ImageView {
         }
         return currPt;
         //return new P3D(0, 0);   //IF NO POINT FOUND, FALLBACK TO THIS ONE
-    }
+    }*/
 
     public P3D getClosestPoint4(PointF pos){
         //this.populatePointList();
@@ -647,7 +647,7 @@ public class ImageCanvas extends ImageView {
         //return new P3D(0, 0);   //IF NO POINT FOUND, FALLBACK TO THIS ONE
     }
 
-    public P3D getClosestPoint4Temp(PointF pos){
+    /*public P3D getClosestPoint4Temp(PointF pos){
         ArrayList<P3D> closestPoints = new ArrayList<P3D>();
         //this.populatePointList();
         //P3D currPt = this.model.points.get(0);
@@ -671,7 +671,7 @@ public class ImageCanvas extends ImageView {
         }
         return closest;
         //return new P3D(0, 0);   //IF NO POINT FOUND, FALLBACK TO THIS ONE
-    }
+    }*/
 
 
 
@@ -739,7 +739,7 @@ public class ImageCanvas extends ImageView {
         }
     }
 
-    public void capturePoints4Alt(float x, float y){
+    /*public void capturePoints4Alt(float x, float y){
         if(this.pointsNb==0){
             point1 = getClosestPoint4(new PointF(x,y));
             if(point1!=null) {
@@ -799,7 +799,7 @@ public class ImageCanvas extends ImageView {
                 }
             }
         }
-    }
+    }*/
 
     public void sortInNewTriangle(){ // sortiert ein neu manuell hinzugefuegtes Dreieck richtig ein (von links nach rechts)
         if(newTriangles<=1){ //nur ein neues Dreieck => keine Sortierung notwendig
@@ -834,12 +834,12 @@ public class ImageCanvas extends ImageView {
         return summe;
     }
 
-    public int IndexModulSummeAlt(Tri3D dreieck){
+    /*public int IndexModulSummeAlt(Tri3D dreieck){
         int p0 = this.model.points.indexOf(dreieck.getp0())%anzahlPunkteInRing;
         int p1 = this.model.points.indexOf(dreieck.getp1())%anzahlPunkteInRing;
         int p2 = this.model.points.indexOf(dreieck.getp2())%anzahlPunkteInRing;
         return (p0+p1+p2);
-    }
+    }*/
 
     public void setSelectedPoint(P3D p){
         this.selectedPoint = p;
@@ -1211,7 +1211,7 @@ public class ImageCanvas extends ImageView {
         return this.seitenRechteck;
     }*/
 
-    public Path topPath(){
+    /*public Path topPath(){
         Path path = new Path();
         P3D currentPoint=this.model.points.get(0);
         path.moveTo(currentPoint.x,currentPoint.y);
@@ -1221,9 +1221,9 @@ public class ImageCanvas extends ImageView {
         }
         path.close();
         return path;
-    }
+    }*/
 
-    public void topOld(){
+    /*public void topOld(){
         //Bitmap hilfsBitmap = Bitmap.createBitmap(Resources.getSystem().getDisplayMetrics().widthPixels,Resources.getSystem().getDisplayMetrics().heightPixels-100,Bitmap.Config.ARGB_8888);
         canvas2.setBitmap(hilfsBitmap);
         shader(1);
@@ -1245,8 +1245,8 @@ public class ImageCanvas extends ImageView {
         /*shapaint = new Paint();
         shapaint.setStyle(Paint.Style.FILL);
         shapaint.setAntiAlias(true);*/
-        shapaint.setShader(shader);
-    }
+        /*shapaint.setShader(shader);
+    }*/
 
     public void top(){
         if(photoTexture) {
@@ -1325,7 +1325,7 @@ public class ImageCanvas extends ImageView {
         shapaint.setShader(shader);
     }
 
-    public void sideOld(){
+    /*public void sideOld(){
         //Bitmap hilfsBitmap = Bitmap.createBitmap(Resources.getSystem().getDisplayMetrics().widthPixels,Resources.getSystem().getDisplayMetrics().heightPixels-100,Bitmap.Config.ARGB_8888);
         canvas2.setBitmap(hilfsBitmap);
         shader(1);
@@ -1344,8 +1344,8 @@ public class ImageCanvas extends ImageView {
         /*shapaint = new Paint();
         shapaint.setStyle(Paint.Style.FILL);
         shapaint.setAntiAlias(true);*/
-        shapaint.setShader(shader);
-    }
+        /*shapaint.setShader(shader);
+    }*/
 
     /*public void drawOnBitmapTest(){ //Textur von "Deckel" bzw. "Boden" geht in die Seitenansicht, deshalb "ausschneiden" der Dreiecke notwendig!
         //RectShape path=new RectShape();
@@ -1523,7 +1523,7 @@ public class ImageCanvas extends ImageView {
         //rotatedZ=0;
     }
 
-    public void reihenfolgeOld(){
+    /*public void reihenfolgeOld(){
         Canvas canvas3=new Canvas(hilfsBitmap3);
         Dreiecke.clear();
         int i=0;
@@ -1551,9 +1551,9 @@ public class ImageCanvas extends ImageView {
                 currentTri = boden.get(j);
                 if(textures){
                     if(photoTexture){
-                            /*shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
-                            shapath.resize(this.getWidth(), this.getHeight());
-                            shapath.draw(canvas, sideViewPaint);*/
+                            //shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
+                            //shapath.resize(this.getWidth(), this.getHeight());
+                            //shapath.draw(canvas, sideViewPaint);
                         canvas3.drawPath(pathify(currentTri), currentTri.getColour());
                     }else {
                         shapath = new PathShape(pathify(currentTri), this.getWidth(), this.getHeight());
@@ -1592,7 +1592,7 @@ public class ImageCanvas extends ImageView {
                 }else{
                     model.triangles.get(h).setColour(Color.BLUE);
                 }*/
-            seiten.add(model.triangles.get(h)); //nur zu Testzwecken, dauerndes Umaendern der Liste unnoetig!
+            /*seiten.add(model.triangles.get(h)); //nur zu Testzwecken, dauerndes Umaendern der Liste unnoetig!
         }
         boolean[] dreiecke = new boolean[seiten.size()];
         for(int h=0;h<dreiecke.length;h++){
@@ -1631,9 +1631,9 @@ public class ImageCanvas extends ImageView {
             int weiter1 = hinten, weiter2 = hinten;
             //for (int h=0;h<2*anzahlPunkteInRing;h++) {
             while(i<seiten.size()){
-                    /*if(i>=seiten.size()){
-                        break;
-                    }*/
+                    //if(i>=seiten.size()){
+                      //  break;
+                    //}
                 if (--weiter1 < 0) {
                     weiter1 = (anzahlPunkteInRing * 2)-1;
                 }
@@ -1729,11 +1729,11 @@ public class ImageCanvas extends ImageView {
             }
         }
         shader = new BitmapShader(hilfsBitmap3, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
-        /*shapaint = new Paint();
-        shapaint.setStyle(Paint.Style.FILL);
-        shapaint.setAntiAlias(true);*/
+        //shapaint = new Paint();
+        //shapaint.setStyle(Paint.Style.FILL);
+        //shapaint.setAntiAlias(true);
         shapaint.setShader(shader);
-    }
+    }*/
 
     public void reihenfolge(){
         Dreiecke.clear();
@@ -2376,9 +2376,7 @@ public class ImageCanvas extends ImageView {
         return pathTriThis;
     }
 
-    public void rebuildFormerModel(){
 
-    }
 
     public void setOriginalTopRect(float[] punkte){
         float links=this.getWidth();float oben=this.getHeight(); float rechts=0; float unten=0;
